@@ -47,6 +47,8 @@ namespace Craft
 			int sortingOrder = -1; // << 경쟁 상황에서 우선 순위를 결정할 때 사용.
 
 			bool isSighted = false;
+
+			bool keepSighted = false;
 		};
 
 	public:
@@ -59,7 +61,8 @@ namespace Craft
 			const Vector2& position,
 			Color color = Color::White,
 			int sortingOrder = 0,
-			bool isSighted = false
+			bool isSighted = false,
+			bool keepSighted = false
 		);
 
 		inline void SetCameraView(const Vector2& newCameraView) 

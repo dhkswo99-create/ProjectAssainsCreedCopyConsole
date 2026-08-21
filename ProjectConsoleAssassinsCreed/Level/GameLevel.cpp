@@ -85,10 +85,38 @@ void GameLevel::IsSighted()
 {
 	for (const std::shared_ptr<Actor>& actor : actorList)
 	{
-		//actor->SetIsSighted(SearchingActorGL(actor)); //실제 게임
-		actor->SetIsSighted(true); //디버깅
+		actor->SetIsSighted(SearchingActorGL(actor)); //실제 게임
+		//actor->SetIsSighted(true); //디버깅
+		if (actor->GetIsSighted() 
+			&& !actor->GetKeepSighted() 
+			&& !actor->IsTypeOf<Enemy>()
+			&& !actor->IsTypeOf<Ground>()
+			)
+		{
+			actor->SetKeepSighted(true);
+		}
+		IsntSighted(actor);
 	}
 }
+
+void GameLevel::IsntSighted(const std::shared_ptr<Actor>& actor)
+{
+	if (actor->GetKeepSighted())
+	{
+		if (actor->IsTypeOf<Wall>())
+		{
+			if (actor->GetIsSighted())
+			{
+				actor->SetColor(Color::White);
+			}
+			else
+			{
+				actor->SetColor(Color::Gray);
+			}
+		}
+	}
+}
+
 
 // 현재 위치가 벽인지
 bool GameLevel::IsWall(const Craft::Vector2& currentPosition)

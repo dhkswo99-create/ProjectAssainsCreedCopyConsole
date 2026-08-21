@@ -7,10 +7,11 @@ namespace Craft
 	Actor::Actor(
 		const std::wstring& image,
 		const Vector2& position,
-		Color color	
+		Color color
 	)
 		: image(image), position(position), color(color),
-		width(static_cast<int>(image.length()))
+		width(static_cast<int>(image.length())),
+		keepSighted(false)
 	{
 
 	}
@@ -24,7 +25,7 @@ namespace Craft
 	}
 	void Actor::Tick(float deltaTime) //필요한 곳에서 구현해서 사용
 	{
-
+		
 	}
 	void Actor::Draw() //필요한 곳에서 구현해서 사용
 	{
@@ -36,7 +37,7 @@ namespace Craft
 
 		//렌더러에 필요한 데이터 제출.
 		Renderer::Get().Submit(
-			image, position, color, sortingOrder, isSighted);
+			image, position, color, sortingOrder, isSighted, keepSighted);
 	}
 	void Actor::OnCollision(const std::shared_ptr<Actor>& other)
 	{

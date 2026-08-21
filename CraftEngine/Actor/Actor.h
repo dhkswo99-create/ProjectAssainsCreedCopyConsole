@@ -53,9 +53,12 @@ namespace Craft
 		
 		inline bool GetIsSighted() const { return isSighted; }
 		void SetIsSighted(bool newIsSighted) { this->isSighted =  newIsSighted; }
+		inline bool GetKeepSighted() const { return keepSighted; }
+		void SetKeepSighted(bool newKeepSighted) { this->keepSighted =  newKeepSighted; }
 
 		void SetPosition(const Vector2& newposition);
 		void SetFace(const Vector2& newFace);
+		void SetColor(const Color newcolor) { this->color = newcolor; }
 
 		void SetColiisionEnabled(bool iscollisionEnabled)
 		{
@@ -94,6 +97,7 @@ namespace Craft
 
 
 	protected:
+		bool keepSighted;
 		bool isSighted;
 		//충돌 가능 여부
 		bool collisionEnabled = false;

@@ -24,6 +24,7 @@ public:
 	);
 
 	void IsSighted();
+	void IsntSighted(const std::shared_ptr<Craft::Actor>& actor);
 
 	bool IsWall(const Craft::Vector2& currentPosition);
 	

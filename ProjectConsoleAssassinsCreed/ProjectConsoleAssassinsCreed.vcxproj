@@ -134,6 +134,9 @@
     <ClInclude Include="Level\MenuLevel.h" />
     <ClInclude Include="Util\Timer.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
