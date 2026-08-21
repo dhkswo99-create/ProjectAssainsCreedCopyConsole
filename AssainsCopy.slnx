@@ -1,0 +1,12 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="CraftEngine/CraftEngine.vcxproj" Id="89c5d956-558d-4da6-b97a-6c5c1c3be3ff">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="ProjectConsoleAssassinsCreed/ProjectConsoleAssassinsCreed.vcxproj" Id="e3e6d542-654f-4d9e-8bf0-aefe90614e8e">
+    <Platform Project="x64" />
+  </Project>
+</Solution>
