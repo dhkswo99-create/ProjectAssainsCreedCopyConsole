@@ -42,7 +42,7 @@ public:
 	Vector2 FacingDirection(const Vector2& currentPostion);
 
 	// Bresenham 알고리즘으로 FacingDirection으로 받은 vector<Vector2> 큐를 리턴.
-	std::vector<Vector2> RayDirectionQueueInsert(const Vector2& actorPosition);
+	//std::vector<Vector2> RayDirectionQueueInsert(const Vector2& actorPosition);
 
 	// 게터
 	double GetSightDegree() { return sightDegree; }

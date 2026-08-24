@@ -3,6 +3,7 @@
 #include <Actor/Enemy/Guard.h>
 #include <Actor/Enemy/Archer.h>
 #include <Util/Astar.h>
+#include <Util/Bresenham.h>
 #include <Render/Renderer.h>
 #include <Input/Input.h>
 #include <cmath>
@@ -24,31 +25,8 @@ void Enemy::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
-	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	found = Searching();
 
-	
-	if (!sleep && found)
-	{
-		pathDirection.clear();
-		if (this->IsTypeOf<Guard>())
-		{
-			pathDirection = FindRoute(level->GetPlayerPosition()); //Guard.
-		}
-		else if (this->IsTypeOf<Archer>())
-		{
-
-		}
-	}
-	
-	if (Input::Get().GetKeyDown('t') || Input::Get().GetKeyDown('T'))
-	{
-		if (this->IsTypeOf<Guard>())
-		{
-			pathDirection.clear();
-			pathDirection = FindRoute(level->GetPlayerPosition()); //Guard.
-		}
-	}
 	// Enemy 방향에 맞게 조정
 	int faceCheck = face.x * 3 + face.y;
 	switch (faceCheck)
@@ -112,6 +90,7 @@ void Enemy::Move(const Vector2& direction, float deltaTime)
 	Vector2 newPosition;
 	dx += direction.x * moveSpeed * deltaTime;
 	dy += direction.y * moveSpeed * deltaTime;
+	//이동 전 바라보는 방향 세팅
 	SetFace(direction);
 	if (dx > 1 || -1 > dx || dy > 1 || -1 > dy)
 	{
@@ -135,7 +114,10 @@ void Enemy::Awake()
 // sightDegree로 판별. 
 bool Enemy::Searching()
 {
+	//GameLevel 객체 생성
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+	//Bresenham 알고리즘 사용을 위해 객체 생성
+	Bresenham bresenham(level->GetMap());
 	Vector2 playerPos = level->GetPlayerPosition();
 	Vector2 myPos = GetPosition();
 	distance = static_cast<float>(std::sqrt(
@@ -160,7 +142,8 @@ bool Enemy::Searching()
 		relativeAngle = 0;
 	}
 	// 직선 경로
-	std::vector<Vector2> rayDirectionQueue = RayDirectionQueueInsert(myPos);
+	std::vector<Vector2> rayDirectionQueue = bresenham.BresenhamFinder(myPos, playerPos);
+	//std::vector<Vector2> rayDirectionQueue = RayDirectionQueueInsert(myPos);
 	isWall = false;
 	for (Vector2 path : rayDirectionQueue)
 	{
@@ -172,11 +155,13 @@ bool Enemy::Searching()
 	}
 	if (!isWall)
 	{
+		// 아주 가깝다면 깨어남
 		if (sightRange / 4 > distance)
 		{
 			if (sleep) Awake();
 			return true;
 		}
+		// 일정 거리 내에 있고 시야 각 내에 있다면 발견
 		else if ((sightRange > distance)
 			&& (sightDegree > relativeAngle
 				&& relativeAngle > -1 * sightDegree)
@@ -188,6 +173,7 @@ bool Enemy::Searching()
 	return false;
 }
 
+//// 각도를 계산하여 바라보는 방향 반환
 Vector2 Enemy::FacingDirection(const Vector2& currentPosition)
 {
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
@@ -257,18 +243,18 @@ Vector2 Enemy::FacingDirection(const Vector2& currentPosition)
 	return Vector2(0, 0);
 }
 
-std::vector<Vector2> Enemy::RayDirectionQueueInsert(const Vector2& currentPosition)
-{
-	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
-	std::vector<Vector2> rayDirectionQueue;
-	Vector2 pos = currentPosition;
-	Vector2 playerPos = level->GetPlayerPosition();
-	while (pos != playerPos)
-	{
-		Vector2 faceDirction = FacingDirection(pos);
-		pos = pos + faceDirction;
-		rayDirectionQueue.emplace_back(pos);
-	}
-	return rayDirectionQueue;
-}
+//std::vector<Vector2> Enemy::RayDirectionQueueInsert(const Vector2& currentPosition)
+//{
+//	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+//	std::vector<Vector2> rayDirectionQueue;
+//	Vector2 pos = currentPosition;
+//	Vector2 playerPos = level->GetPlayerPosition();
+//	while (pos != playerPos)
+//	{
+//		Vector2 faceDirction = FacingDirection(pos);
+//		pos = pos + faceDirction;
+//		rayDirectionQueue.emplace_back(pos);
+//	}
+//	return rayDirectionQueue;
+//}
 

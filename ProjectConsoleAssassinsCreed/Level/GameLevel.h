@@ -34,8 +34,7 @@ public:
 
 	Craft::Vector2 GetPlayerPosition() const { return player->GetPosition(); }
 	Craft::Vector2 GetPlayerFace() const { return player->GetFace(); }
-	 
-	std::vector<std::vector<int>> GetMap() { return map; }
+	std::vector<std::vector<int>>& GetMap() { return map; }
 	std::vector<std::vector<int>> GetClearMap() { return clearMap; }
 
 private:

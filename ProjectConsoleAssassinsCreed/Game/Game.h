@@ -6,8 +6,9 @@
 //레벨 관리에 사용할 상태 열거형
 enum class State
 {
-	GamePlay = 0,
-	Menu = 1,
+	Start = 0,
+	GamePlay = 1,
+	Menu = 2,
 	Length 
 };
 
@@ -20,8 +21,9 @@ public:
 	~Game() = default;
 
 	// 메뉴/게임 레벨을 전환하는 함수
-	void ToggleMenu();
-
+	//void ToggleMenu();
+	void PlayGame();
+	void ToMenu();
 	void RestartGame();
 
 	void SetGameStatus(bool target, bool client, bool gameOver);

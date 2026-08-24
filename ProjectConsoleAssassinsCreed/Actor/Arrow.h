@@ -36,7 +36,6 @@ public:
  
 	virtual void OnCollision(const std::shared_ptr<Actor>& other) override;
 	
-	Vector2 FacingDirection(const Vector2& currentPosition, const Vector2 destination);
 
 private:
 	virtual void Tick(float deltaTime) override;

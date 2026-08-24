@@ -28,9 +28,23 @@ Arrow::Arrow(const Vector2& position, const std::vector<Vector2>& arrowPath)
 	Vector2 destination = arrowPath[arrowPath.size() - 1];
 	isSighted = true;
 	timer.SetTargetTime(0.07f);
+	int count = 0;
+	Vector2 previousPath;
+	Vector2 face;
 	for (Vector2 path : arrowPath)
 	{
-		Vector2 face = FacingDirection(path, destination);
+		//Vector2 face = FacingDirection(path, destination);
+		if (count == 0)
+		{
+			++count;
+			previousPath = path;
+			face = path - position;
+		}
+		else
+		{
+			face = path - previousPath;
+			previousPath = path;
+		}
 		int faceCheck = face.x * 3 + face.y;
 		switch (faceCheck)
 		{
@@ -66,6 +80,7 @@ Arrow::Arrow(const Vector2& position, const std::vector<Vector2>& arrowPath)
 	SetColiisionEnabled(true);
 }
 
+
 void Arrow::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
@@ -77,16 +92,17 @@ void Arrow::Tick(float deltaTime)
 		return;
 	}
 
-	if (effectSequenceCount - 1 == currentIndex)
+	if (effectSequenceCount == currentIndex)
 	{
 		Destroy();
 		return;
 	}
 
-	timer.Reset();
 
+	timer.Reset();
 	ChangeImage(arrowQueue[currentIndex].frame);
 	SetPosition(arrowPos[currentIndex]);
+
 	
 	++currentIndex;
 }
@@ -99,79 +115,4 @@ void Arrow::OnCollision(const std::shared_ptr<Actor>& other)
 	{
 		other->Destroy();
 	}
-}
-
-Vector2 Arrow::FacingDirection(const Vector2& currentPosition, const Vector2 destination)
-{
-	Vector2 rightVector = Vector2(1, 0);
-	float innerProduct = static_cast<float>(
-		(destination.x - currentPosition.x) * rightVector.x
-		+ (destination.y - currentPosition.y) * rightVector.y
-		);
-	float rayDistance = static_cast<float>(std::sqrt(
-		std::pow(destination.x - currentPosition.x, 2)
-		+ std::pow(destination.y - currentPosition.y, 2)
-	));
-	float absFace = static_cast<float>(std::sqrt(
-		std::pow(rightVector.x, 2)
-		+ std::pow(rightVector.y, 2)
-	));
-	double facingAngle = 0;
-	if (rayDistance > 0)
-	{
-		facingAngle = acos(innerProduct / (rayDistance * absFace)) * ANGLE;
-	}
-	if (destination.y - currentPosition.y < 0)
-	{
-		if (facingAngle < 23)
-		{
-			return Vector2(1, 0);
-		}
-		else if (facingAngle > 23
-			&& facingAngle < 68)
-		{
-			return Vector2(1, -1);
-		}
-		else if (facingAngle > 68
-			&& facingAngle < 113)
-		{
-			return Vector2(0, -1);
-		}
-		else if (facingAngle > 113
-			&& facingAngle < 158)
-		{
-			return Vector2(-1, -1);
-		}
-		else if (facingAngle > 158)
-		{
-			return Vector2(-1, 0);
-		}
-	}
-	else
-	{
-		if (facingAngle < 23)
-		{
-			return Vector2(1, 0);
-		}
-		else if (facingAngle > 23
-			&& facingAngle < 68)
-		{
-			return Vector2(1, 1);
-		}
-		else if (facingAngle > 68
-			&& facingAngle < 113)
-		{
-			return Vector2(0, 1);
-		}
-		else if (facingAngle > 113
-			&& facingAngle < 158)
-		{
-			return Vector2(-1, 1);
-		}
-		else if (facingAngle > 158)
-		{
-			return Vector2(-1, 0);
-		}
-	}
-	return Vector2(0, 0);
 }

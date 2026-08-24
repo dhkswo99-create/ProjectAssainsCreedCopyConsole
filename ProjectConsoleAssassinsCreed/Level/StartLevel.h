@@ -1,19 +1,19 @@
-﻿#pragma once
+#pragma once
 
 #include <Level/Level.h>
 #include <string>
 
 //메뉴아이템구조체
-struct MenuItem
+struct StartItem
 {
 	// 메뉴 선택시 실행할 로직 저장을 위한 함수 포인터
 	using OnSelected = void (*)(); // typedef void (*OnSelected)();
 
 	//생성자
-	MenuItem(const std::wstring& text, OnSelected	 onSelected)
+	StartItem(const std::wstring& text, OnSelected onSelected)
 		:text(text), onSelected(onSelected)
 	{
-		
+
 	}
 
 
@@ -25,10 +25,10 @@ struct MenuItem
 
 };
 
-class MenuLevel : public Craft::Level
+class StartLevel : public Craft::Level
 {
 public:
-	MenuLevel();
+	StartLevel();
 
 private:
 	//이벤트 함수 오버라이드
@@ -46,7 +46,7 @@ private:
 	Craft::Color unselectedColor = Craft::Color::White;
 
 	//메뉴 아이템 배열
-	std::vector<std::unique_ptr<MenuItem>> itemList;
+	std::vector<std::unique_ptr<StartItem>> itemList;
 
 };
 

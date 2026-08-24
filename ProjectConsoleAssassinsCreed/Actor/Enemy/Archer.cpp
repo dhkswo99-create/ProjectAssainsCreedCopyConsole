@@ -2,6 +2,7 @@
 
 #include <Level/GameLevel.h>
 #include <Actor/Arrow.h>
+#include <Util/Bresenham.h>
 
 using namespace Craft; 
 
@@ -12,7 +13,7 @@ Archer::Archer(const Vector2& position)
 	runRange = 4.0f;
 	//공격 범위
 	range = 14;
-	sightRange = 15;
+	sightRange = 18;
 	moveSpeed = 5.0f;
 	sortingOrder = 3;
 	castDelay = 1.0f;
@@ -28,15 +29,31 @@ void Archer::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	delay.Tick(deltaTime);
+
+
+	if (!sleep && found
+		&& doneAttack && !doAttack)
+	{
+		if (pathDirection.size())
+		{
+			pathDirection.clear();
+		}
+		pathDirection = FindRoute(level->GetPlayerPosition());
+	}
 
 
 	if (InAttackRange() && !isWall && distance > runRange)
 	{
 		FacePlayer();
 		WillAttack();
+		if (pathDirection.size())
+		{
+			pathDirection.clear();
+			moveIndex = 0;
+		}
 	}
-
 	if (doAttack)
 	{
 		delay.SetTargetTime(castDelay);
@@ -80,9 +97,10 @@ void Archer::Tick(float deltaTime)
 void Archer::Attack(int range, const Vector2& face, float deltaTime)
 {
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+	Bresenham bresenham(level->GetMap());
 	std::shared_ptr<Level> owner = GetOwner();
-	std::vector<Vector2> arrowPath = RayDirectionQueueInsert(GetPosition());
 	Vector2 pPo = level->GetPlayerPosition();
+	std::vector<Vector2> arrowPath = bresenham.BresenhamFinder(GetPosition(), pPo);
 	if (owner)
 	{
 		if (!isWall)

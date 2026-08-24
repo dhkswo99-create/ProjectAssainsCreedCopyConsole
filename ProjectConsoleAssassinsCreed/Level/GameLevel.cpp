@@ -10,6 +10,8 @@
 #include <Actor/Player.h>
 #include <Actor/Camera.h>
 #include <Render/Renderer.h>
+#include <Input/Input.h>
+#include <Util/Bresenham.h>
 
 #include <iostream>
 #include <cassert>
@@ -87,10 +89,10 @@ void GameLevel::IsSighted()
 	{
 		actor->SetIsSighted(SearchingActorGL(actor)); //실제 게임
 		//actor->SetIsSighted(true); //디버깅
-		if (actor->GetIsSighted() 
-			&& !actor->GetKeepSighted() 
-			&& !actor->IsTypeOf<Enemy>()
+		if (	!actor->IsTypeOf<Enemy>()
 			&& !actor->IsTypeOf<Ground>()
+			&&  actor->GetIsSighted() 
+			&& !actor->GetKeepSighted() 
 			)
 		{
 			actor->SetKeepSighted(true);
@@ -116,7 +118,6 @@ void GameLevel::IsntSighted(const std::shared_ptr<Actor>& actor)
 		}
 	}
 }
-
 
 // 현재 위치가 벽인지
 bool GameLevel::IsWall(const Craft::Vector2& currentPosition)
@@ -265,12 +266,22 @@ void GameLevel::Tick(float deltaTime)
 
 	// Game에 결과 저장
 	game.SetGameStatus(targetClear, clientClear, isGameOver);
+	
+	// ESC 종료
+	if (Input::Get().GetKeyDown(VK_ESCAPE))
+	{
+		//QuitGame();
+		//메뉴 토글
+		Game& game = dynamic_cast<Game&>(Engine::Get());
+		game.ToMenu();
+		return;
+	}
 
 	if (isGameOver
 		|| targetClear
 		|| clientClear)
 	{
-		game.ToggleMenu();
+		game.ToMenu();
 	}
 }
 
@@ -450,7 +461,6 @@ void GameLevel::SetGameStatus()
 	}
 }
 
-
 bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 {
 	Vector2 playerPos = GetPlayerPosition();
@@ -485,9 +495,11 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 	{
 		relativeAngle = 0;
 	}
+		Bresenham bresenham(map);
 	if (relativeAngle < 50)
 	{
-		std::vector<Vector2> rayDirectionQueue = RayDirectionQueueInsertGL(actorPos);
+		//std::vector<Vector2> rayDirectionQueue = RayDirectionQueueInsertGL(actorPos);
+		std::vector<Vector2> rayDirectionQueue = bresenham.BresenhamFinder(playerPos, actorPos);
 		bool isWall = false;
 		for (Vector2 path : rayDirectionQueue)
 		{

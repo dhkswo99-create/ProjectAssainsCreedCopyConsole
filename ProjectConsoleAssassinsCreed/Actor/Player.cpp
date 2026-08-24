@@ -42,26 +42,8 @@ void Player::Tick(float deltaTime)
 	//콘솔 창 이름에 값 설정
 	SetConsoleTitleA(fpsString);
 
-
-	// ESC 종료
-	if (Input::Get().GetKeyDown(VK_ESCAPE))
-	{
-		//QuitGame();
-		//메뉴 토글
-		Game& game = dynamic_cast<Game&>(Engine::Get());
-		game.ToggleMenu();
-		return;
-	}
-
-
 	delay.Tick(deltaTime);
 	buff.Tick(deltaTime);
-	//ESC 종료
-	if (Input::Get().GetKeyDown(VK_ESCAPE))
-	{
-		QuitGame();
-	}
-
 
 	//이동 오른쪽 1 | 왼쪽 -1
 	float directionX = 0.0f;

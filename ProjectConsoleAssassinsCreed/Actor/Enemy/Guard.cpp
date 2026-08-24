@@ -27,9 +27,16 @@ Guard::Guard(const Vector2& position)
 void Guard::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
-
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	delay.Tick(deltaTime);
 
+	if (!sleep && found
+		&& doneAttack && !doAttack)
+	{
+		pathDirection.clear();
+		pathDirection = FindRoute(level->GetPlayerPosition()); //Guard.
+	}
+	
 
 	if (InAttackRange() && !isWall)
 	{

@@ -48,11 +48,11 @@ namespace Craft
 		//반환
 		inline void SetOwner(std::weak_ptr<Level> newOwner) { owner = newOwner; }
 
-		Vector2 GetPosition() const { return position; }
-		Vector2 GetFace() const { return face; }
+		inline Vector2 GetPosition() const { return position; }
+		inline Vector2 GetFace() const { return face; }
 		
 		inline bool GetIsSighted() const { return isSighted; }
-		void SetIsSighted(bool newIsSighted) { this->isSighted =  newIsSighted; }
+		inline void SetIsSighted(bool newIsSighted) { this->isSighted =  newIsSighted; }
 		inline bool GetKeepSighted() const { return keepSighted; }
 		void SetKeepSighted(bool newKeepSighted) { this->keepSighted =  newKeepSighted; }
 

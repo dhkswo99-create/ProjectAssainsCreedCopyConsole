@@ -1,4 +1,4 @@
-﻿#include "MenuLevel.h"
+#include "StartLevel.h"
 #include <Game/Game.h>
 #include <Input/Input.h>
 #include <Actor/Camera.h>
@@ -7,23 +7,12 @@
 
 using namespace Craft;
 
-MenuLevel::MenuLevel()
+StartLevel::StartLevel()
 {
 	//메뉴 아이템 생성 
 	itemList.emplace_back(
-		std::make_unique<MenuItem>(
-			L"Restart Game",
-			[]()
-			{
-				//메뉴 토글 함수 호출
-				Game& game = dynamic_cast<Game&>(Engine::Get());
-				game.RestartGame();
-			}
-		)
-	);
-	itemList.emplace_back(
-		std::make_unique<MenuItem>(
-			L"Resume Game",
+		std::make_unique<StartItem>(
+			L"start Game",
 			[]()
 			{
 				//메뉴 토글 함수 호출
@@ -33,7 +22,7 @@ MenuLevel::MenuLevel()
 		)
 	);
 	itemList.emplace_back(
-		std::make_unique<MenuItem>(
+		std::make_unique<StartItem>(
 			L"Quit Game",
 			[]()
 			{
@@ -44,50 +33,9 @@ MenuLevel::MenuLevel()
 	);
 }
 
-void MenuLevel::Tick(float deltaTime)
+void StartLevel::Tick(float deltaTime)
 {
 	Level::Tick(deltaTime);
-
-	Game& game = dynamic_cast<Game&>(Engine::Get());
-	if (game.isGameOver)
-	{ //TODO
-		Renderer::Get().Submit(
-			L"GameOver!!",
-			Vector2::Zero,
-			Color::White,
-			0,
-			true
-		);
-	}
-	else if (game.targetClear)
-	{
-		Renderer::Get().Submit(
-			L"The target is dead.But was it really the right choice... ?",
-			Vector2(-20, 0),
-			Color::White,
-			0,
-			true
-		);
-	}
-	else if (game.clientClear)
-	{
-		Renderer::Get().Submit(
-			L"The client is dead.But was it really the right choice... ?",
-			Vector2(-20, 0),
-			Color::White,
-			0,
-			true
-		);
-	}
-	//입력 처리 (위/아래 방향키, 엔터, ESC 키)
-	if (Input::Get().GetKeyDown(VK_ESCAPE))
-	{
-		Game& game = dynamic_cast<Game&>(Engine::Get());
-		game.PlayGame();
-
-		//인덱스 초기화
-		currentIndex = 0;
-	}
 
 	//배열의 요소개수
 	const int length = static_cast<int>(itemList.size());
@@ -106,7 +54,7 @@ void MenuLevel::Tick(float deltaTime)
 	if (Input::Get().GetKeyDown(VK_RETURN))
 	{
 		//어서트
-		assert(currentIndex >= 0	 
+		assert(currentIndex >= 0
 			&& currentIndex < (int)itemList.size()
 			&& itemList[currentIndex]->onSelected
 		);
@@ -117,18 +65,24 @@ void MenuLevel::Tick(float deltaTime)
 	}
 }
 
-void MenuLevel::Draw()
+void StartLevel::Draw()
 {
 	/*
 	* Sokoban Game
-	* 
+	*
 	* Resume Game
 	* Exit Game
 	*/
 
 	//제목 그리기
-	Renderer::Get().SetCameraView(Vector2(-45, -10));
-	Renderer::Get().Submit(L"", Vector2::Zero);
+	Renderer::Get().SetCameraView(Vector2(-50, -15));
+	Renderer::Get().Submit(L"AssainsCreed2D                \n"
+		L"Product by WJ",
+		Vector2(-2, -4),
+		Color::White,
+		0,
+		true
+	);
 
 	// 메뉴 아이템 그리기
 	const int count = static_cast<int>(itemList.size());

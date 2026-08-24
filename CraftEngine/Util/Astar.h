@@ -51,7 +51,6 @@ private:
 	int COL;
 	//맵을 저장할 공간
 	std::vector<std::vector<int>> map;
-	std::vector<std::vector<char>> zmap;
 	//무한
 	double INF = std::numeric_limits<double>::infinity();
 	const Vector2 startPosition;
