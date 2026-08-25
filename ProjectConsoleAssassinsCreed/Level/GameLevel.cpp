@@ -465,15 +465,16 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 {
 	Vector2 playerPos = GetPlayerPosition();
 	Vector2 actorPos = actor->GetPosition();
-	float distance = static_cast<float>(std::sqrt(
-		std::pow(playerPos.x - actorPos.x, 2)
-		+ std::pow(playerPos.y - actorPos.y, 2)
-	));
-	if (distance < 5)
+	float distance = // 거리로 조건문 처리할 때는 제곱 형태로 두고 계산하여 성능 향상 
+		(playerPos.x - actorPos.x)
+		* (playerPos.x - actorPos.x)
+		+ (playerPos.y - actorPos.y)
+		* (playerPos.y - actorPos.y);
+	if (distance < 5 * 5)
 	{
 		return true;
 	}
-	else if (distance > 20)
+	else if (distance > 20 * 20)
 	{
 		return false;
 	}
@@ -487,6 +488,7 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 		+ std::pow(playerFace.y, 2)
 	));
 	double relativeAngle = 0;
+	distance = std::sqrt(distance);// 진짜 거리가 필요할 때 계산해서 적용.
 	if (distance * absFace)
 	{
 		relativeAngle = acos(innerProduct / (distance * absFace)) * ANGLE;
@@ -499,7 +501,7 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 	if (relativeAngle < 50)
 	{
 		//std::vector<Vector2> rayDirectionQueue = RayDirectionQueueInsertGL(actorPos);
-		std::vector<Vector2> rayDirectionQueue = bresenham.BresenhamFinder(playerPos, actorPos);
+		std::vector<Vector2> rayDirectionQueue = bresenham.BresenhamFinder(distance, playerPos, actorPos);
 		bool isWall = false;
 		for (Vector2 path : rayDirectionQueue)
 		{

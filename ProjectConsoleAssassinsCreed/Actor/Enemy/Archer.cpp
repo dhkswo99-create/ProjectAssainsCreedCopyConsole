@@ -100,7 +100,7 @@ void Archer::Attack(int range, const Vector2& face, float deltaTime)
 	Bresenham bresenham(level->GetMap());
 	std::shared_ptr<Level> owner = GetOwner();
 	Vector2 pPo = level->GetPlayerPosition();
-	std::vector<Vector2> arrowPath = bresenham.BresenhamFinder(GetPosition(), pPo);
+	std::vector<Vector2> arrowPath = bresenham.BresenhamFinder(distance, GetPosition(), pPo);
 	if (owner)
 	{
 		if (!isWall)

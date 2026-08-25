@@ -171,6 +171,7 @@ namespace Craft
 
 
 			//글자의 끝 위치
+			//지금 사용하는 객체들은 다 한 픽셀 객체라 동일.
 			const int endX = startX + width - 1;
 			const int endY = startY + height - 1;
 

@@ -124,6 +124,10 @@ bool Enemy::Searching()
 		std::pow(playerPos.x - myPos.x, 2)
 		+ std::pow(playerPos.y - myPos.y, 2)
 	));
+	if (distance > sightRange)
+	{ // 적군이 많아질수록 성능에 유리
+		return false;
+	}
 	Vector2 myFace = GetFace();
 	float innerProduct = static_cast<float>(
 		(playerPos.x - myPos.x)* myFace.x + (playerPos.y - myPos.y)* myFace.y
@@ -142,7 +146,7 @@ bool Enemy::Searching()
 		relativeAngle = 0;
 	}
 	// 직선 경로
-	std::vector<Vector2> rayDirectionQueue = bresenham.BresenhamFinder(myPos, playerPos);
+	std::vector<Vector2> rayDirectionQueue = bresenham.BresenhamFinder(distance, myPos, playerPos);
 	//std::vector<Vector2> rayDirectionQueue = RayDirectionQueueInsert(myPos);
 	isWall = false;
 	for (Vector2 path : rayDirectionQueue)

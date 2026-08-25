@@ -16,7 +16,7 @@ Bresenham::Bresenham(std::vector<std::vector<int>>& map)
 	COL = map[0].size();
 }
 
-std::vector<Vector2> Bresenham::BresenhamFinder(const Vector2& startPosition, const Vector2& destination)
+std::vector<Vector2> Bresenham::BresenhamFinder(const float distance, const Vector2& startPosition, const Vector2& destination)
 {
 	std::vector<Vector2> nullVector;
     if (!IsInRange(startPosition)
@@ -37,10 +37,6 @@ std::vector<Vector2> Bresenham::BresenhamFinder(const Vector2& startPosition, co
     float innerProduct_RightVector = static_cast<float>(
         (- startPosition.x + destination.x)
         );
-    float distance = std::sqrt(
-        std::pow((startPosition.x - destination.x), 2)
-        + std::pow((startPosition.y - destination.y), 2)
-    );
     float absRightVector = 1;//(1,0)
 
     double bresenhamAngle = acos(innerProduct_RightVector / (distance)) * ANGLE;
@@ -172,6 +168,8 @@ std::vector<Vector2> Bresenham::CalcBresenham(const Vector2& startPosition, cons
 		bresenhamPath.emplace_back(currentPosition);
 	} 
 	bresenhamPath.pop_back(); // 목적지는 제외
+	// 정식 때는 이거 주석 처리해서 화살이 플레이어까지 닿게 하고
+	// Todo : 게임 레벨에서 벽 처리할 때 한 칸 덜 체크하게 해야함
 
 	return bresenhamPath;
 }

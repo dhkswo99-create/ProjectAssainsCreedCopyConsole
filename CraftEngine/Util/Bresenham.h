@@ -14,6 +14,7 @@ public:
 	~Bresenham() = default;
 
 	std::vector<Vector2> BresenhamFinder(
+		const float distance,
 		const Vector2& startPosition,
 		const Vector2& destination
 	);
