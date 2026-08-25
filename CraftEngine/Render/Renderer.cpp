@@ -215,10 +215,19 @@ namespace Craft
 				frame->charInfoArray[index].Char.UnicodeChar
 					= command.image[sourceIndex];
 				
-				//글자 색상 값 설정s
-				frame->charInfoArray[index].Attributes
-					= static_cast<DWORD>(command.color);
+				//글자 색상 값 설정
+				if (command.isSighted == true && command.sortingOrder != 14)
+				{
+					frame->charInfoArray[index].Attributes
+						= static_cast<DWORD>(command.color)
+						+ BACKGROUND_INTENSITY;
+				}
+				else
+				{
+					frame->charInfoArray[index].Attributes
+						= static_cast<DWORD>(command.color);
 
+				}
 				//그리기 우선 순위 값 설정
 				frame->sortingOrderArray[index] = command.sortingOrder;
 			}

@@ -109,7 +109,10 @@ void Arrow::Tick(float deltaTime)
 
 void Arrow::OnCollision(const std::shared_ptr<Actor>& other)
 {
-	if (other->IsTypeOf<Player>()
+		//받은 객체에서 자신의 방어력, 속성 등을 기반으로 계산해 데미지를 받고
+		//체력이 모두 소진되면 죽는 것도 받은 객체 책임.
+		//무기 객체를 생성할 때 객체의 데미지, 속성을 넘겨서 무기 객체의 데미지, 속성을 결정할것.
+	if (other->IsTypeOf<Player>() // 체력 화살의 데미지, 속성 등을 넘기기.
 		|| other->IsTypeOf<Guard>()
 		)
 	{

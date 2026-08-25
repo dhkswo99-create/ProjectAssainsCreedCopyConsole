@@ -15,7 +15,7 @@ Player::Player(const Vector2& position)
 	isSighted = true;
 	face = Vector2::Right;
 	moveSpeed = 10.0f;
-	sortingOrder = 10;
+	sortingOrder = 14;
 	xPosition = position.x;
 	yPosition = position.y;
 	//충돌 허용

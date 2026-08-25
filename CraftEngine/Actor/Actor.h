@@ -99,6 +99,8 @@ namespace Craft
 	protected:
 		bool keepSighted;
 		bool isSighted;
+		//땅인지
+		bool bIsGround = false;
 		//충돌 가능 여부
 		bool collisionEnabled = false;
 		//BeginPlay 생에 한번만 처리

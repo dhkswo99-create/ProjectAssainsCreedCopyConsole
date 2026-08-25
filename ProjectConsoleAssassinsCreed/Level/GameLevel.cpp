@@ -239,7 +239,7 @@ void GameLevel::OnInitialized()
 	Level::OnInitialized();
 
 	//파일을 읽어서 맵 로드
-	LoadMap("ACMap.txt");
+	LoadMap("TestMap.txt");
 
 }
 
@@ -385,7 +385,7 @@ void GameLevel::LoadMap(const std::string& filename)
 			SpawnActor<Ground>(position);
 			break;
 		case 'p': //플레이어
-			SpawnActor<Ground>(position); //플레이어가 이동한 후에 바닥
+			SpawnActor<Ground>(position); //플레이어가 이동한 후에 바닥 
 			camera = SpawnActor<Camera>();
 			player = SpawnActor<Player>(position);
 			break;
@@ -465,12 +465,16 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 {
 	Vector2 playerPos = GetPlayerPosition();
 	Vector2 actorPos = actor->GetPosition();
+	if (actor->IsTypeOf<Player>())
+	{
+		return true;
+	}
 	float distance = // 거리로 조건문 처리할 때는 제곱 형태로 두고 계산하여 성능 향상 
 		(playerPos.x - actorPos.x)
 		* (playerPos.x - actorPos.x)
 		+ (playerPos.y - actorPos.y)
 		* (playerPos.y - actorPos.y);
-	if (distance < 5 * 5)
+	if (distance < 4 * 4 && 1 <= distance) 
 	{
 		return true;
 	}
@@ -491,14 +495,24 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 	distance = std::sqrt(distance);// 진짜 거리가 필요할 때 계산해서 적용.
 	if (distance * absFace)
 	{
-		relativeAngle = acos(innerProduct / (distance * absFace)) * ANGLE;
+		
+		if (innerProduct / (distance * absFace) > 1)
+		{
+			innerProduct = distance * absFace;
+		}
+		if (innerProduct / (distance * absFace) < -1)
+		{
+			innerProduct = -1 * distance * absFace;
+		}
+	 	relativeAngle = acos(innerProduct / (distance * absFace)) * ANGLE;
 	}
 	else
 	{
 		relativeAngle = 0;
 	}
 		Bresenham bresenham(map);
-	if (relativeAngle < 50)
+	if (relativeAngle < 40 && 1 <= distance
+		&& -40 < relativeAngle)
 	{
 		//std::vector<Vector2> rayDirectionQueue = RayDirectionQueueInsertGL(actorPos);
 		std::vector<Vector2> rayDirectionQueue = bresenham.BresenhamFinder(distance, playerPos, actorPos);
