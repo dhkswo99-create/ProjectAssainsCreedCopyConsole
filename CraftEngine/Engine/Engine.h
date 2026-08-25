@@ -23,10 +23,15 @@ namespace Craft
 			float framerate = 120.0f;
 			
 			//사용할 콘설 화면 너비
-			int width = 0;
+			int gameWidth = 0;
 
 			//사용할 콘솔 화면 높이
-			int height = 0;
+			int gameHeight = 0;
+
+			//스크린 사이즈
+			int itemWidth = 0;
+
+			int itemHeight = 0;
 		};
 
 	public:	
@@ -57,8 +62,10 @@ namespace Craft
 		static Engine& Get();
 
 		//게터
-		inline int GetWidth() const { return setting.width; }
-		inline int GetHeight() const { return setting.height; }
+		inline int GetGameWidth() const { return setting.gameWidth; }
+		inline int GetGameHeight() const { return setting.gameHeight; }
+		inline int GetItemWidth() const { return setting.itemWidth; }
+		inline int GetItemHeight() const { return setting.itemHeight; }
 
 
 	protected:

@@ -239,7 +239,7 @@ void GameLevel::OnInitialized()
 	Level::OnInitialized();
 
 	//파일을 읽어서 맵 로드
-	LoadMap("TestMap.txt");
+	LoadMap("ACMap.txt");
 
 }
 
@@ -366,26 +366,26 @@ void GameLevel::LoadMap(const std::string& filename)
 			SpawnActor<Wall>(position);
 			break;
 		case '.': //땅
-			SpawnActor<Ground>(position);
+			//SpawnActor<Ground>(position);
 			break;
 		case 'g': //경비
 			SpawnActor<Guard>(position);
-			SpawnActor<Ground>(position);
+			//SpawnActor<Ground>(position);
 			break;
 		case 'a': //궁수
 			SpawnActor<Archer>(position);
-			SpawnActor<Ground>(position);
+			//SpawnActor<Ground>(position);
 			break;
 		case 't': // 타겟
 			SpawnActor<Target>(position);
-			SpawnActor<Ground>(position);
+			//SpawnActor<Ground>(position);
 			break;
 		case 'c': // 의뢰인
 			SpawnActor<Client>(position);
-			SpawnActor<Ground>(position);
+			//SpawnActor<Ground>(position);
 			break;
 		case 'p': //플레이어
-			SpawnActor<Ground>(position); //플레이어가 이동한 후에 바닥 
+			//SpawnActor<Ground>(position); //플레이어가 이동한 후에 바닥 
 			camera = SpawnActor<Camera>();
 			player = SpawnActor<Player>(position);
 			break;

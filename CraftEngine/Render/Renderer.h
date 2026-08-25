@@ -22,7 +22,7 @@ namespace Craft
 			Frame(int bufferCount);
 			~Frame();
 
-			void Clear(const Vector2& screenSize); //렌더러가 가지고 있음.
+			void Clear(const Vector2& fullScreenSize); //렌더러가 가지고 있음.
 
 			//화면에 그릴 2차원 배열 문자값
 			std::unique_ptr<CHAR_INFO[]> charInfoArray;
@@ -52,11 +52,20 @@ namespace Craft
 		};
 
 	public:
-		Renderer(const Vector2& screenSize);
+		Renderer(const Vector2& gameScreenSize, const Vector2& itemScreenSize);
 		~Renderer();
 
 		//화면에 그릴 데이터를 제출하는 함수.
 		void Submit(
+			const std::wstring& image,
+			const Vector2& position,
+			Color color = Color::White,
+			int sortingOrder = 0,
+			bool isSighted = false,
+			bool keepSighted = false
+		);
+
+		void ScreenSubmit(
 			const std::wstring& image,
 			const Vector2& position,
 			Color color = Color::White,
@@ -100,9 +109,14 @@ namespace Craft
 		//이번프레임에 그릴 렌더 명령을 모아두는 배열
 		//큐처럼 사용.
 		std::vector<RenderCommand> renderQueue;
+		std::vector<RenderCommand> itemRenderQueue;
 
-		//화면 크기
-		Vector2 screenSize;
+		// 게임 화면 크기
+		Vector2 gameScreenSize;
+		// 아이템 화면 크기
+		Vector2 itemScreenSize;
+		// 전체 화면 크기
+		Vector2 fullScreenSize;
 
 		//글자 그리기 순서 2차원 배열을 관리하는 프레임 객체
 		std::unique_ptr<Frame> frame;

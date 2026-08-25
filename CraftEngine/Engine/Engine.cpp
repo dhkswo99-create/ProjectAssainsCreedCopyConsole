@@ -26,8 +26,11 @@ namespace Craft
 		input = std::make_unique<Input>();
 		
 		//렌더러 객체 생성 >> 원래 시점에 맞게생성하는데 간단한 예제이므로 생성자에서 생성.
+		int renderWidth = setting.gameWidth + setting.itemWidth;
+		int renderHeight = setting.gameHeight + setting.itemHeight;
 		renderer = std::make_unique<Renderer>(
-			Vector2(setting.width, setting.height)
+			Vector2(setting.gameWidth, setting.gameHeight),
+			Vector2(setting.itemWidth, setting.itemHeight)
 		);
 
 		// 충돌 시스템 객체 생성
@@ -250,13 +253,21 @@ namespace Craft
 			{
 				sscanf_s(token, "framerate = %f", &setting.framerate);
 			}
-			else if (strcmp(key, "width") == 0)
+			else if (strcmp(key, "gameWidth") == 0)
 			{
-				sscanf_s(token, "width = %d", &setting.width);
+				sscanf_s(token, "gameWidth = %d", &setting.gameWidth);
 			}
-			else if (strcmp(key, "height") == 0)
+			else if (strcmp(key, "gameHeight") == 0)
 			{
-				sscanf_s(token, "height = %d", &setting.height);
+				sscanf_s(token, "gameHeight = %d", &setting.gameHeight);
+			}
+			else if (strcmp(key, "itemWidth") == 0)
+			{
+				sscanf_s(token, "itemWidth = %d", &setting.itemWidth);
+			}
+			else if (strcmp(key, "itemHeight") == 0)
+			{
+				sscanf_s(token, "itemHeight = %d", &setting.itemHeight);
 			}
 			
 			//나머지 문자열 자르기

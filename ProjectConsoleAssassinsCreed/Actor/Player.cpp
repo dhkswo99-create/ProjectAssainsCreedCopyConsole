@@ -216,13 +216,13 @@ void Player::Move(float directionX, float directionY, float deltaTime)
 		yPosition = 1.0f;
 	}
 	//화면 오른쪽 벗어나지 않도록 처리
-	if (xPosition + width >= Engine::Get().GetWidth())
+	if (xPosition + width >= Engine::Get().GetGameWidth())
 	{
-		xPosition = static_cast<float>((Engine::Get().GetWidth() - width));
+		xPosition = static_cast<float>((Engine::Get().GetGameWidth() - width));
 	}
-	if (yPosition + height >= Engine::Get().GetHeight())
+	if (yPosition + height >= Engine::Get().GetGameHeight())
 	{
-		yPosition = static_cast<float>((Engine::Get().GetHeight() - height));
+		yPosition = static_cast<float>((Engine::Get().GetGameHeight() - height));
 	}
 
 	//위치 업데이트
