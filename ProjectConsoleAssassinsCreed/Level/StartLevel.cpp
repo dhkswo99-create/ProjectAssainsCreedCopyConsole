@@ -18,6 +18,7 @@ StartLevel::StartLevel()
 				//메뉴 토글 함수 호출
 				Game& game = dynamic_cast<Game&>(Engine::Get());
 				game.PlayGame();
+				game.changeLevelRender();
 			}
 		)
 	);
@@ -75,9 +76,9 @@ void StartLevel::Draw()
 	*/
 
 	//제목 그리기
-	Renderer::Get().SetCameraView(Vector2(-50, -15));
-	Renderer::Get().Submit(L"AssainsCreed2D                \n"
-		L"Product by WJ",
+	Renderer::Get().ScreenSubmit(
+		L"AssainsCreed2D\n"
+		L"Product by WJ ",
 		Vector2(-2, -4),
 		Color::White,
 		0,
@@ -93,7 +94,7 @@ void StartLevel::Draw()
 			? selectedColor : unselectedColor;
 
 		//아이템 그리기
-		Renderer::Get().Submit(
+		Renderer::Get().ScreenSubmit(
 			itemList[ix]->text,
 			Vector2(0, 2 + ix),
 			textColor,

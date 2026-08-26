@@ -70,9 +70,13 @@ namespace Craft
 			const Vector2& position,
 			Color color = Color::White,
 			int sortingOrder = 0,
-			bool isSighted = false,
-			bool keepSighted = false
+			bool isSighted = false
 		);
+
+		inline void SetIsGameLevel(const bool newIsGameLevel)
+		{
+			isGameLevel = newIsGameLevel;
+		}
 
 		inline void SetCameraView(const Vector2& newCameraView) 
 		{
@@ -81,6 +85,10 @@ namespace Craft
 
 		// Draw 이벤트 함수 -Engine에서 호출
 		void Draw();
+
+		// 커맨드 객체 초기화
+		void RenderQueueClear();
+
 
 		//전역 접근 함수
 		static Renderer& Get();
@@ -100,6 +108,7 @@ namespace Craft
 
 
 	private:
+		bool isGameLevel = false;
 		//전역 접근 가능하도록 변수 선언
 		static Renderer* instance;
 

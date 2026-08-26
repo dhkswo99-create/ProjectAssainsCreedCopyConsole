@@ -27,6 +27,14 @@ void Player::Tick(float deltaTime)
 	//상위 객체 tick 호출
 	super::Tick(deltaTime);
 
+	Renderer::Get().ScreenSubmit(
+		L"P",
+		Vector2(position.x/10, position.y/20+ 1),
+		Color::White,
+		20,
+		true
+	);
+
 	//프레임 관련 문자열
 	const int size = 256;
 	char fpsString[size] = {};
@@ -216,11 +224,11 @@ void Player::Move(float directionX, float directionY, float deltaTime)
 		yPosition = 1.0f;
 	}
 	//화면 오른쪽 벗어나지 않도록 처리
-	if (xPosition + width >= Engine::Get().GetGameWidth())
+	if (xPosition + width >= level->GetMap().size() + 1)
 	{
 		xPosition = static_cast<float>((Engine::Get().GetGameWidth() - width));
 	}
-	if (yPosition + height >= Engine::Get().GetGameHeight())
+	if (yPosition + height >= level->GetMap().size() + 1)
 	{
 		yPosition = static_cast<float>((Engine::Get().GetGameHeight() - height));
 	}

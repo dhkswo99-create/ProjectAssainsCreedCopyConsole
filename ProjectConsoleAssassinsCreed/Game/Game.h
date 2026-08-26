@@ -22,6 +22,7 @@ public:
 
 	// 메뉴/게임 레벨을 전환하는 함수
 	//void ToggleMenu();
+	void changeLevelRender();
 	void PlayGame();
 	void ToMenu();
 	void RestartGame();

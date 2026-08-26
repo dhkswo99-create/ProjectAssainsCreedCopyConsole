@@ -120,11 +120,12 @@ bool Enemy::Searching()
 	Bresenham bresenham(level->GetMap());
 	Vector2 playerPos = level->GetPlayerPosition();
 	Vector2 myPos = GetPosition();
-	distance = static_cast<float>(std::sqrt(
-		std::pow(playerPos.x - myPos.x, 2)
-		+ std::pow(playerPos.y - myPos.y, 2)
-	));
-	if (distance > sightRange)
+	distance = 
+		(playerPos.x - myPos.x)
+		* (playerPos.x - myPos.x)
+		+ (playerPos.y - myPos.y)
+		* (playerPos.y - myPos.y);
+	if (distance > sightRange * sightRange) // 단순 비교
 	{ // 적군이 많아질수록 성능에 유리
 		return false;
 	}
@@ -137,6 +138,7 @@ bool Enemy::Searching()
 		std::pow(myFace.x, 2)
 		+ std::pow(myFace.y, 2)
 	));
+	distance = std::sqrt(distance);
 	if (distance * absFace)
 	{
 		relativeAngle = acos(innerProduct / (distance * absFace)) * ANGLE;

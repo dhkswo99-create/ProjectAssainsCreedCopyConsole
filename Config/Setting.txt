@@ -1,5 +1,5 @@
 framerate = 120
 itemWidth = 50
-itemHeight = 0
+itemHeight = 80
 gameWidth = 80
 gameHeight = 80

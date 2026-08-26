@@ -56,7 +56,7 @@ void Camera::Tick(float deltaTime)
 	cameraTargetView = level->GetPlayerPosition();
 	playerFace = level->GetPlayerFace();  //TODO
 	// 기본 카메라 조정
-	cameraTargetView.x -= 45;
+	cameraTargetView.x -= 40;
 	cameraTargetView.y -= 15;
 
 	// 플레이어가 바라보는 방향에 맞추어 시야 조정

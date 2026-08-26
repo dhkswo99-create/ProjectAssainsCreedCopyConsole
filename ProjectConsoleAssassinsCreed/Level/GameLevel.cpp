@@ -90,7 +90,7 @@ void GameLevel::IsSighted()
 		actor->SetIsSighted(SearchingActorGL(actor)); //실제 게임
 		//actor->SetIsSighted(true); //디버깅
 		if (	!actor->IsTypeOf<Enemy>()
-			&& !actor->IsTypeOf<Ground>()
+			//&& !actor->IsTypeOf<Ground>()
 			&&  actor->GetIsSighted() 
 			&& !actor->GetKeepSighted() 
 			)
@@ -109,11 +109,11 @@ void GameLevel::IsntSighted(const std::shared_ptr<Actor>& actor)
 		{
 			if (actor->GetIsSighted())
 			{
-				actor->SetColor(Color::White);
+				actor->SetColor(Color::Gray);
 			}
 			else
 			{
-				actor->SetColor(Color::Gray);
+				actor->SetColor(Color::Black);
 			}
 		}
 	}
@@ -238,14 +238,52 @@ void GameLevel::OnInitialized()
 	//상위 개체 호출
 	Level::OnInitialized();
 
+
 	//파일을 읽어서 맵 로드
-	LoadMap("ACMap.txt");
+	LoadMap("ACMap.txt"); 
 
 }
 
 void GameLevel::Draw()
 {
 	IsSighted();
+	Renderer::Get().ScreenSubmit(
+		L"┌────────────────────────────────────────────────┐\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"└────────────────────────────────────────────────┘",
+		Vector2::Zero,
+		Color::Yellow,
+		0,
+		true
+	);
+
 	//게임 클리어표시
 	if (isGameOver
 		|| targetClear
@@ -274,6 +312,7 @@ void GameLevel::Tick(float deltaTime)
 		//메뉴 토글
 		Game& game = dynamic_cast<Game&>(Engine::Get());
 		game.ToMenu();
+		game.changeLevelRender();
 		return;
 	}
 
@@ -282,6 +321,7 @@ void GameLevel::Tick(float deltaTime)
 		|| clientClear)
 	{
 		game.ToMenu();
+		game.changeLevelRender();
 	}
 }
 

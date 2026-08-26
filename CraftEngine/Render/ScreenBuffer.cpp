@@ -26,18 +26,18 @@ namespace Craft
 		rect.Left = 0;
 		rect.Right = static_cast<short> (size.x -1);
 		rect.Bottom = static_cast<short> (size.y -1);
-		BOOL result = SetConsoleWindowInfo(
+		//화면 버퍼 크기 설정
+		BOOL result = SetConsoleScreenBufferSize(buffer, size);
+		assert(result == TRUE);
+		//결과 확인.
+		result = SetConsoleWindowInfo(
 			buffer,
 			TRUE,
 			&rect
 		);
-
-		//결과 확인.
 		assert(result == TRUE);
 
-		//화면 버퍼 크기 설정
-		result = SetConsoleScreenBufferSize(buffer, size);
-		assert(result == TRUE);
+
 
 
 		// 만든 콘솔의 커서 끄기

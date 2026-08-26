@@ -46,7 +46,10 @@ namespace Craft
 	Renderer::Renderer(const Vector2& gameScreenSize, const Vector2& itemScreenSize)
 		: gameScreenSize(gameScreenSize), itemScreenSize(itemScreenSize)
 	{
-		fullScreenSize = gameScreenSize + itemScreenSize;
+		fullScreenSize.x = gameScreenSize.x + itemScreenSize.x;
+		fullScreenSize.y = (gameScreenSize.y >= itemScreenSize.y)
+			? gameScreenSize.y : itemScreenSize.y;
+
 		assert(!instance && "instance should be null");
 		instance = this;
 
@@ -100,6 +103,21 @@ namespace Craft
 		renderQueue.emplace_back(command);
 	}
 
+	void Renderer::ScreenSubmit(
+		const std::wstring& image,
+		const Vector2& position,
+		Color color, int sortingOrder,
+		bool isSighted)
+	{
+		RenderCommand command;
+		command.image = image;
+		command.position = position;
+		command.color = color;
+		command.sortingOrder = sortingOrder;
+		command.isSighted = isSighted;
+		itemRenderQueue.emplace_back(command);
+	}
+
 	void Renderer::Draw()
 	{
 		//3단계로 나뉨
@@ -111,6 +129,12 @@ namespace Craft
 
 		// 화면 표시
 		Present();
+	}
+
+	void Renderer::RenderQueueClear()
+	{
+		renderQueue.clear();
+		itemRenderQueue.clear();
 	}
 
 	Renderer& Renderer::Get()
@@ -130,203 +154,337 @@ namespace Craft
 
 	void Renderer::DrawRenderQueue()
 	{
-		//렌더 큐 순회하면서 그리기 명령 실행
-		for (const RenderCommand& command : renderQueue)
+		// 게임 레벨
+
+
+
+		if (isGameLevel)
 		{
-			//그릴 문자값이 없으면 건너뛰기 // 너비는 width 높이는 height로 설정 
-			if (command.image.empty())
+			//렌더 큐 순회하면서 그리기 명령 실행
+			for (const RenderCommand& command : renderQueue)
 			{
-				continue;
-			}
-			if (!command.keepSighted && command.isSighted == false)
-			{
-				continue;
-			}
-			int width = 0;
-			int height = 1;
-
-			for ( wchar_t cha : command.image )
-			{
-				if (cha == '\0') break;
-				++width;
-				if (cha == '\n')
+				//그릴 문자값이 없으면 건너뛰기 // 너비는 width 높이는 height로 설정 
+				if (command.image.empty())
 				{
-					++height;
-					width = 0;
+					continue;
 				}
-			}
-
-			//y위치가 화면을 벗어났으면 건너뛰기
-			if (command.position.y < 0 
-				|| command.position.y >= gameScreenSize.y)
-			{
-				continue;
-			}
-
-			//그리려는 문자열 값
-			//const int length = static_cast<int>(command.image.length()); todo 필요한지 확인
-
-			//글자의 시작 위치
-
-			const int startX = command.position.x;
-			const int startY = command.position.y;
-
-
-			//글자의 끝 위치
-			//지금 사용하는 객체들은 다 한 픽셀 객체라 동일.
-			const int endX = startX + width - 1;
-			const int endY = startY + height - 1;
-
-			// 위치가 화면을 벗어났는지 확인
-			if (endX < 0 || startX >= gameScreenSize.x
-				|| endY < 0 || startY >= gameScreenSize.y)
-			{
-				continue;
-			}
-
-			//실제 그릴 글자의 위치 구하기 화면 위치
-			const int visibleStartX = startX < 0 ? 0 : startX;
-			const int visibleEndX = endX >= gameScreenSize.x ? gameScreenSize.x - 1 : endX;
-			const int visibleStartY = startY < 0 ? 0 : startY;
-			const int visibleEndY = endY >= gameScreenSize.y ? gameScreenSize.y - 1 : endY;
-
-			//루프 순회하면서 글자를 2차원 배열에 하나씩 기록
-			for (int x = visibleStartX; x < startX +
-				static_cast<int>(command.image.length()); ++x)
-			{
-				// 문자열에서 글자값을 가져올 때 사용할 인덱스
-				const int sourceIndex = x - startX;
-				if (command.image[sourceIndex] == '\n') continue;
-
-				//글자 2차원 배열 인덱스 //찍히는 위치. 
-				int realX = sourceIndex % width;
-				int realY = sourceIndex / width;
-
-
-				const int index = ( ( command.position.y + realY ) * fullScreenSize.x)
-					+ command.position.x + realX;
-
-				//정렬 우선 순위를 비교해서 그릴지 말지 판정
-				//지금 설정은 덮어쓰기 동일 우선 순위시
-				if (frame->sortingOrderArray[index] > command.sortingOrder)
+				if (!command.keepSighted && command.isSighted == false)
 				{
 					continue;
 				}
 
-				//2차원 배열에 글자, 속성 설정 
-				frame->charInfoArray[index].Char.UnicodeChar
-					= command.image[sourceIndex];
+				int width = 0;
+				int height = 1;
+
+				for (wchar_t cha : command.image)
+				{
+					if (cha == '\0') break;
+					++width;
+					if (cha == '\n')
+					{
+						++height;
+						width = 0;
+					}
+				}
+
+				//y위치가 화면을 벗어났으면 건너뛰기
+				if (command.position.y < 0
+					|| command.position.y >= gameScreenSize.y)
+				{
+					continue;
+				}
+
+				//그리려는 문자열 값
+				//const int length = static_cast<int>(command.image.length()); todo 필요한지 확인
+
+				//글자의 시작 위치
+
+				const int startX = command.position.x;
+				const int startY = command.position.y;
+
+
+				//글자의 끝 위치
+				//지금 사용하는 객체들은 다 한 픽셀 객체라 동일.
+				const int endX = startX + width - 1;
+				const int endY = startY + height - 1;
+
+				// 위치가 화면을 벗어났는지 확인
+				if (endX < 0 || startX >= gameScreenSize.x
+					|| endY < 0 || startY >= gameScreenSize.y)
+				{
+					continue;
+				}
+
+				//실제 그릴 글자의 위치 구하기 화면 위치
+				const int visibleStartX = startX < 0 ? 0 : startX;
+				const int visibleEndX = endX >= gameScreenSize.x ? gameScreenSize.x - 1 : endX;
+				const int visibleStartY = startY < 0 ? 0 : startY;
+				const int visibleEndY = endY >= gameScreenSize.y ? gameScreenSize.y - 1 : endY;
+
+				//루프 순회하면서 글자를 2차원 배열에 하나씩 기록
+				for (int x = visibleStartX; x < startX +
+					static_cast<int>(command.image.length()); ++x)
+				{
+					// 문자열에서 글자값을 가져올 때 사용할 인덱스
+					const int sourceIndex = x - startX;
+					if (command.image[sourceIndex] == '\n') continue;
+
+					//글자 2차원 배열 인덱스 //찍히는 위치. 
+					int realX = sourceIndex % width;
+					int realY = sourceIndex / width;
+
+
+					const int index = ((command.position.y + realY) * fullScreenSize.x)
+						+ command.position.x + realX;
+
+					//정렬 우선 순위를 비교해서 그릴지 말지 판정
+					//지금 설정은 덮어쓰기 동일 우선 순위시
+					if (frame->sortingOrderArray[index] > command.sortingOrder)
+					{
+						continue;
+					}
+
+					//2차원 배열에 글자, 속성 설정 
+					frame->charInfoArray[index].Char.UnicodeChar
+						= command.image[sourceIndex];
+
+					//글자 색상 값 설정
+					if (command.isSighted == true && command.sortingOrder == 0)
+					{
+						frame->charInfoArray[index].Attributes
+							= static_cast<DWORD>(command.color)
+							+ BACKGROUND_GREEN
+							+ BACKGROUND_RED
+							+ BACKGROUND_BLUE;
+					}
+					else
+					{
+						frame->charInfoArray[index].Attributes
+							= static_cast<DWORD>(command.color);
+					}
+					if (command.isSighted == false
+						&& command.keepSighted == true
+						&& command.sortingOrder != 14)
+					{
+						frame->charInfoArray[index].Attributes
+							= static_cast<DWORD>(command.color)
+							+ BACKGROUND_INTENSITY;
+					}
+
+					//}
+					//그리기 우선 순위 값 설정
+					frame->sortingOrderArray[index] = command.sortingOrder;
+				}
+			}
+			// Todo 렌더 아이템 렌더 영역에 맞게 수정
+			for (const RenderCommand& command : itemRenderQueue)
+			{
+				//그릴 문자값이 없으면 건너뛰기 // 너비는 width 높이는 height로 설정 
+				if (command.image.empty())
+				{
+					continue;
+				}
+				int width = 0;
+				int height = 1;
 				
-				//글자 색상 값 설정
-				//if (command.isSighted == true && command.sortingOrder != 14)
-				//{
-				//	frame->charInfoArray[index].Attributes
-				//		= static_cast<DWORD>(command.color)
-				//		+ BACKGROUND_INTENSITY;
-				//}
-				//else
-				//{
+
+				for (wchar_t cha : command.image)
+				{
+					if (cha == '\0') break;
+					++width;
+					if (cha == '\n')
+					{
+						++height;
+						width = 0;
+					}
+				}
+
+				//y위치가 화면을 벗어났으면 건너뛰기
+				if (command.position.y < 0
+					|| command.position.y >= itemScreenSize.y)
+				{
+					continue;
+				}
+
+				//그리려는 문자열 값
+				//const int length = static_cast<int>(command.image.length()); todo 필요한지 확인
+
+				//글자의 시작 위치
+
+				const int startX = command.position.x;
+				const int startY = command.position.y;
+
+
+				//글자의 끝 위치
+				//지금 사용하는 객체들은 다 한 픽셀 객체라 동일.
+				const int endX = startX + width - 1;
+				const int endY = startY + height - 1;
+
+				// 위치가 화면을 벗어났는지 확인
+				if (endX < 0 || startX >= itemScreenSize.x
+					|| endY < 0 || startY >= itemScreenSize.y)
+				{
+					continue;
+				}
+
+				//실제 그릴 글자의 위치 구하기 화면 위치
+				const int visibleStartX = startX < 0 ? 0 : startX;
+				const int visibleEndX = endX >= itemScreenSize.x ? itemScreenSize.x - 1 : endX;
+				const int visibleStartY = startY < 0 ? 0 : startY;
+				const int visibleEndY = endY >= itemScreenSize.y ? itemScreenSize.y - 1 : endY;
+				int numberOfLine = 0;
+
+				//루프 순회하면서 글자를 2차원 배열에 하나씩 기록
+				for (int x = visibleStartX; x < startX +
+					static_cast<int>(command.image.length()); ++x)
+				{
+					// 문자열에서 글자값을 가져올 때 사용할 인덱스
+					const int sourceIndex = x - startX;
+					if (command.image[sourceIndex] == '\n')
+					{
+						++numberOfLine;
+						continue;
+					}
+					//글자 2차원 배열 인덱스 //찍히는 위치. 
+					int realX = (sourceIndex - numberOfLine) % width;
+					int realY = (sourceIndex - numberOfLine) / width;
+
+
+					const int index = ((command.position.y + realY) * fullScreenSize.x)
+						+ command.position.x + realX
+						+ gameScreenSize.x; //아이템 영역
+
+					//정렬 우선 순위를 비교해서 그릴지 말지 판정
+					//지금 설정은 덮어쓰기 동일 우선 순위시
+					if (frame->sortingOrderArray[index] > command.sortingOrder)
+					{
+						continue;
+					}
+
+					//2차원 배열에 글자, 속성 설정 
+					frame->charInfoArray[index].Char.UnicodeChar
+						= command.image[sourceIndex];
+
 					frame->charInfoArray[index].Attributes
 						= static_cast<DWORD>(command.color);
 
-				//}
-				//그리기 우선 순위 값 설정
-				frame->sortingOrderArray[index] = command.sortingOrder;
-			}
-		}
-
-		for (const RenderCommand& command : itemRenderQueue)
-		{
-			//그릴 문자값이 없으면 건너뛰기 // 너비는 width 높이는 height로 설정 
-			if (command.image.empty())
-			{
-				continue;
-			}
-			if (!command.keepSighted && command.isSighted == false)
-			{
-				continue;
-			}
-			int width = 0;
-			int height = 1;
-
-			for ( wchar_t cha : command.image )
-			{
-				if (cha == '\0') break;
-				++width;
-				if (cha == '\n')
-				{
-					++height;
-					width = 0;
+					//}
+					//그리기 우선 순위 값 설정
+					frame->sortingOrderArray[index] = command.sortingOrder;
 				}
 			}
-
-			//y위치가 화면을 벗어났으면 건너뛰기
-			if (command.position.y < 0 
-				|| command.position.y >= gameScreenSize.y)
+		}
+		else
+		{
+			// 게임 레벨이 아닐 때
+			for (const RenderCommand& command : itemRenderQueue)
 			{
-				continue;
-			}
+				//그릴 문자값이 없으면 건너뛰기 // 너비는 width 높이는 height로 설정 
+				if (command.image.empty())
+				{
+					continue;
+				}
+				//if (!command.keepSighted && command.isSighted == false)
+				//{
+				//	continue;
+				//}
+				int width = 0;
+				int height = 1;
 
-			//그리려는 문자열 값
-			//const int length = static_cast<int>(command.image.length()); todo 필요한지 확인
+				for (wchar_t cha : command.image)
+				{
+					if (cha == '\0') break;
+					++width;
+					if (cha == '\n')
+					{
+						++height;
+						width = 0;
+					}
+				}
 
-			//글자의 시작 위치
-
-			const int startX = command.position.x;
-			const int startY = command.position.y;
-
-
-			//글자의 끝 위치
-			//지금 사용하는 객체들은 다 한 픽셀 객체라 동일.
-			const int endX = startX + width - 1;
-			const int endY = startY + height - 1;
-
-			// 위치가 화면을 벗어났는지 확인
-			if (endX < 0 || startX >= gameScreenSize.x
-				|| endY < 0 || startY >= gameScreenSize.y)
-			{
-				continue;
-			}
-
-			//실제 그릴 글자의 위치 구하기 화면 위치
-			const int visibleStartX = startX < 0 ? 0 : startX;
-			const int visibleEndX = endX >= gameScreenSize.x ? gameScreenSize.x - 1 : endX;
-			const int visibleStartY = startY < 0 ? 0 : startY;
-			const int visibleEndY = endY >= gameScreenSize.y ? gameScreenSize.y - 1 : endY;
-
-			//루프 순회하면서 글자를 2차원 배열에 하나씩 기록
-			for (int x = visibleStartX; x < startX +
-				static_cast<int>(command.image.length()); ++x)
-			{
-				// 문자열에서 글자값을 가져올 때 사용할 인덱스
-				const int sourceIndex = x - startX;
-				if (command.image[sourceIndex] == '\n') continue;
-
-				//글자 2차원 배열 인덱스 //찍히는 위치. 
-				int realX = sourceIndex % width;
-				int realY = sourceIndex / width;
-
-
-				const int index = ( ( command.position.y + realY ) * fullScreenSize.x)
-					+ command.position.x + realX;
-
-				//정렬 우선 순위를 비교해서 그릴지 말지 판정
-				//지금 설정은 덮어쓰기 동일 우선 순위시
-				if (frame->sortingOrderArray[index] > command.sortingOrder)
+				//y위치가 화면을 벗어났으면 건너뛰기
+				if (command.position.y < 0
+					|| command.position.y >= fullScreenSize.y)
 				{
 					continue;
 				}
 
-				//2차원 배열에 글자, 속성 설정 
-				frame->charInfoArray[index].Char.UnicodeChar
-					= command.image[sourceIndex];
-				
-				frame->charInfoArray[index].Attributes
-					= static_cast<DWORD>(command.color);
+				//그리려는 문자열 값
+				//const int length = static_cast<int>(command.image.length()); todo 필요한지 확인
 
-				//}
-				//그리기 우선 순위 값 설정
-				frame->sortingOrderArray[index] = command.sortingOrder;
+				//글자의 시작 위치
+
+				const int startX = command.position.x;
+				const int startY = command.position.y;
+
+
+				//글자의 끝 위치
+				//지금 사용하는 객체들은 다 한 픽셀 객체라 동일.
+				const int endX = startX + width - 1;
+				const int endY = startY + height - 1;
+
+				// 위치가 화면을 벗어났는지 확인
+				if (endX < 0 || startX >= fullScreenSize.x
+					|| endY < 0 || startY >= fullScreenSize.y)
+				{
+					continue;
+				}
+
+				//실제 그릴 글자의 위치 구하기 화면 위치
+				const int visibleStartX = startX < 0 ? 0 : startX;
+				const int visibleEndX = endX >= fullScreenSize.x ? fullScreenSize.x - 1 : endX;
+				const int visibleStartY = startY < 0 ? 0 : startY;
+				const int visibleEndY = endY >= fullScreenSize.y ? fullScreenSize.y - 1 : endY;
+				int numberOfLine = 0;
+				//루프 순회하면서 글자를 2차원 배열에 하나씩 기록
+				for (int x = visibleStartX; x < startX +
+					static_cast<int>(command.image.length()); ++x)
+				{
+					// 문자열에서 글자값을 가져올 때 사용할 인덱스
+					const int sourceIndex = x - startX;
+					if (command.image[sourceIndex] == '\n')
+					{
+						++numberOfLine;
+						continue;
+					}
+
+					//글자 2차원 배열 인덱스 //찍히는 위치. 
+					int realX = (sourceIndex - numberOfLine) % width;
+					int realY = (sourceIndex - numberOfLine) / width;
+
+
+
+
+					const int index = ((command.position.y + realY) * fullScreenSize.x)
+						+ command.position.x + realX;
+
+					//정렬 우선 순위를 비교해서 그릴지 말지 판정
+					//지금 설정은 덮어쓰기 동일 우선 순위시
+					if (frame->sortingOrderArray[index] > command.sortingOrder)
+					{
+						continue;
+					}
+
+					//2차원 배열에 글자, 속성 설정 
+					frame->charInfoArray[index].Char.UnicodeChar
+						= command.image[sourceIndex];
+
+					//글자 색상 값 설정
+					//if (command.isSighted == true && command.sortingOrder != 14)
+					//{
+					//	frame->charInfoArray[index].Attributes
+					//		= static_cast<DWORD>(command.color)
+					//		+ BACKGROUND_INTENSITY;
+					//}
+					//else
+					//{
+					frame->charInfoArray[index].Attributes
+						= static_cast<DWORD>(command.color);
+
+					//}
+					//그리기 우선 순위 값 설정
+					frame->sortingOrderArray[index] = command.sortingOrder;
+				}
 			}
 		}
 		// 앞에서 설정한 2차원 배열을 콘솔에 그리기.
@@ -334,7 +492,7 @@ namespace Craft
 
 
 		//렌더 큐 비우기 //그리기가 끝났으니
-		renderQueue.clear();
+		RenderQueueClear();
 
 		//콘솔색상초기화
 		SetConsoleTextAttribute(

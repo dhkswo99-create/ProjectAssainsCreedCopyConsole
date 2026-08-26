@@ -26,6 +26,7 @@ Arrow::Arrow(const Vector2& position, const std::vector<Vector2>& arrowPath)
 	arrowPos(arrowPath)
 {
 	Vector2 destination = arrowPath[arrowPath.size() - 1];
+	sortingOrder = 1;
 	isSighted = true;
 	timer.SetTargetTime(0.07f);
 	int count = 0;

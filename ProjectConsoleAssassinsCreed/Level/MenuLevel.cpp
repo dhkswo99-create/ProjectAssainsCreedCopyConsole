@@ -18,6 +18,7 @@ MenuLevel::MenuLevel()
 				//메뉴 토글 함수 호출
 				Game& game = dynamic_cast<Game&>(Engine::Get());
 				game.RestartGame();
+				game.changeLevelRender();
 			}
 		)
 	);
@@ -29,6 +30,7 @@ MenuLevel::MenuLevel()
 				//메뉴 토글 함수 호출
 				Game& game = dynamic_cast<Game&>(Engine::Get());
 				game.PlayGame();
+				game.changeLevelRender();
 			}
 		)
 	);
@@ -47,13 +49,13 @@ MenuLevel::MenuLevel()
 void MenuLevel::Tick(float deltaTime)
 {
 	Level::Tick(deltaTime);
-
 	Game& game = dynamic_cast<Game&>(Engine::Get());
+	//게임 상태 로직
 	if (game.isGameOver)
 	{ //TODO
-		Renderer::Get().Submit(
+		Renderer::Get().ScreenSubmit(
 			L"GameOver!!",
-			Vector2::Zero,
+			Vector2(46, 8),
 			Color::White,
 			0,
 			true
@@ -61,9 +63,9 @@ void MenuLevel::Tick(float deltaTime)
 	}
 	else if (game.targetClear)
 	{
-		Renderer::Get().Submit(
+		Renderer::Get().ScreenSubmit(
 			L"The target is dead.But was it really the right choice... ?",
-			Vector2(-20, 0),
+			Vector2(25, 8),
 			Color::White,
 			0,
 			true
@@ -71,9 +73,9 @@ void MenuLevel::Tick(float deltaTime)
 	}
 	else if (game.clientClear)
 	{
-		Renderer::Get().Submit(
+		Renderer::Get().ScreenSubmit(
 			L"The client is dead.But was it really the right choice... ?",
-			Vector2(-20, 0),
+			Vector2(25, 8),
 			Color::White,
 			0,
 			true
@@ -84,6 +86,7 @@ void MenuLevel::Tick(float deltaTime)
 	{
 		Game& game = dynamic_cast<Game&>(Engine::Get());
 		game.PlayGame();
+		game.changeLevelRender();
 
 		//인덱스 초기화
 		currentIndex = 0;
@@ -127,8 +130,9 @@ void MenuLevel::Draw()
 	*/
 
 	//제목 그리기
-	Renderer::Get().SetCameraView(Vector2(-45, -10));
-	Renderer::Get().Submit(L"", Vector2::Zero);
+
+
+	Renderer::Get().ScreenSubmit(L"", Vector2::Zero);
 
 	// 메뉴 아이템 그리기
 	const int count = static_cast<int>(itemList.size());
@@ -139,9 +143,9 @@ void MenuLevel::Draw()
 			? selectedColor : unselectedColor;
 
 		//아이템 그리기
-		Renderer::Get().Submit(
+		Renderer::Get().ScreenSubmit(
 			itemList[ix]->text,
-			Vector2(0, 2 + ix),
+			Vector2(45, 10 + ix),
 			textColor,
 			0,
 			true

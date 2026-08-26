@@ -2,6 +2,7 @@
 #include <Level/GameLevel.h>
 #include <Level/MenuLevel.h>
 #include <Level/StartLevel.h>
+#include <Render/Renderer.h>
 
 
 Game::Game()
@@ -13,7 +14,7 @@ Game::Game()
 
 	//시작상태설정
 	state = State::Start;
-
+	changeLevelRender();
 	//게임 시작시 활성화할 레벨 설정
 	mainLevel = levelList[(int)state];
 }
@@ -27,6 +28,19 @@ Game::Game()
 //	mainLevel = levelList[nextState];
 //	state = static_cast<State>(nextState);
 //}
+
+void Game::changeLevelRender()
+{
+	if (state == State::GamePlay)
+	{
+		Craft::Renderer::Get().SetIsGameLevel(true);
+	}
+	else
+	{
+		Craft::Renderer::Get().SetIsGameLevel(false);
+	}
+	Craft::Renderer::Get().RenderQueueClear();
+}
 
 void Game::PlayGame()
 {
