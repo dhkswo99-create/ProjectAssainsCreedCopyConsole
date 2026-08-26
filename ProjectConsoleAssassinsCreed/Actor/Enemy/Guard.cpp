@@ -38,7 +38,7 @@ void Guard::Tick(float deltaTime)
 	}
 	
 
-	if (InAttackRange() && !isWall)
+	if (InAttackRange() && !isWall && !doAttack)
 	{
 		FacePlayer();
 		WillAttack();

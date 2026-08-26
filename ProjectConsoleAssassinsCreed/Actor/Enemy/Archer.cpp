@@ -10,7 +10,7 @@ Archer::Archer(const Vector2& position)
 	:super(L"A", position, Color::Cyan)
 {
 	//도망 범위
-	runRange = 4.0f;
+	runRange = 5.0f;
 	//공격 범위
 	range = 14;
 	sightRange = 18;
@@ -78,7 +78,7 @@ void Archer::Tick(float deltaTime)
 	}
 
 
-	if (doneAttack && !doAttack)
+	if (doneAttack && !doAttack || distance < runRange)
 	{
 		delay.Reset();
 		if (distance < runRange)
@@ -103,7 +103,7 @@ void Archer::Attack(int range, const Vector2& face, float deltaTime)
 	std::vector<Vector2> arrowPath = bresenham.BresenhamFinder(distance, GetPosition(), pPo);
 	if (owner)
 	{
-		if (!isWall)
+		if (!isWall && arrowPath.size())
 		{
 			owner->SpawnActor<Arrow>(GetPosition(), arrowPath);
 		}

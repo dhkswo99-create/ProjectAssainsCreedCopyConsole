@@ -25,6 +25,7 @@ Arrow::Arrow(const Vector2& position, const std::vector<Vector2>& arrowPath)
 	: super(L"a", position, Color::Red),
 	arrowPos(arrowPath)
 {
+
 	Vector2 destination = arrowPath[arrowPath.size() - 1];
 	sortingOrder = 1;
 	isSighted = true;
@@ -84,14 +85,10 @@ Arrow::Arrow(const Vector2& position, const std::vector<Vector2>& arrowPath)
 
 void Arrow::Tick(float deltaTime)
 {
+
 	super::Tick(deltaTime);
 
 	timer.Tick(deltaTime);
-
-	if (!timer.IsTimeOut())
-	{
-		return;
-	}
 
 	if (effectSequenceCount == currentIndex)
 	{
@@ -99,11 +96,16 @@ void Arrow::Tick(float deltaTime)
 		return;
 	}
 
+	if (!timer.IsTimeOut())
+	{
+		return;
+	}
 
-	timer.Reset();
 	ChangeImage(arrowQueue[currentIndex].frame);
 	SetPosition(arrowPos[currentIndex]);
 
+
+	timer.Reset();
 	
 	++currentIndex;
 }

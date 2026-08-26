@@ -27,6 +27,7 @@ public:
 	void IsntSighted(const std::shared_ptr<Craft::Actor>& actor);
 
 	bool IsWall(const Craft::Vector2& currentPosition);
+	bool GetDebuger() { return bDebuger; }
 	
 	std::vector<Craft::Vector2> RayDirectionQueueInsertGL(const Craft::Vector2& actorPosition);
 	Craft::Vector2 FacingDirectionGL(const Craft::Vector2& currentPos, const Craft::Vector2& actorPosition);
@@ -38,6 +39,7 @@ public:
 	std::vector<std::vector<int>> GetClearMap() { return clearMap; }
 
 private:
+	void SetDebuger(const bool debuger) { bDebuger = debuger; }
 	//레벨 초기화 함수
 	virtual void OnInitialized() override;
 
@@ -57,6 +59,9 @@ private:
 	void SetGameStatus();
 
 private:
+	//토글처리
+	int debugerTrigger = 0;
+	bool bDebuger = false;
 	bool targetClear = false;
 	bool clientClear = false;
 	//게임오버 

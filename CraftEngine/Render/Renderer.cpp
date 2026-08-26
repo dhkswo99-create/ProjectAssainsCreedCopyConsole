@@ -264,12 +264,20 @@ namespace Craft
 					}
 					if (command.isSighted == false
 						&& command.keepSighted == true
-						&& command.sortingOrder != 14)
+						&& command.sortingOrder == 0)
 					{
 						frame->charInfoArray[index].Attributes
 							= static_cast<DWORD>(command.color)
 							+ BACKGROUND_INTENSITY;
 					}
+					if (command.image == L"⅓")
+					{
+						frame->charInfoArray[index].Attributes
+							= static_cast<DWORD>(command.color)
+					
+							+ BACKGROUND_GREEN;
+					}
+
 
 					//}
 					//그리기 우선 순위 값 설정

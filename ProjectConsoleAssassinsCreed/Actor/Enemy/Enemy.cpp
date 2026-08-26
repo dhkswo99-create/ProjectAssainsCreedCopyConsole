@@ -173,6 +173,19 @@ bool Enemy::Searching()
 				&& relativeAngle > -1 * sightDegree)
 			)
 		{
+			if (level->GetDebuger())
+			{
+				for (Vector2 path : rayDirectionQueue)
+				{
+					Renderer::Get().Submit(
+						L"⅓",
+						path,
+						Color::Green,
+						1,
+						true
+					);
+				}
+			}
 			return true;
 		}
 	}

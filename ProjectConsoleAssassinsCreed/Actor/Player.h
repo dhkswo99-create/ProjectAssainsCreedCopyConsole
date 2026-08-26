@@ -12,6 +12,7 @@ public:
 	{
 		SetFace(Craft::Vector2::Zero);
 	}
+	void MiniMapSubmit();
 
 	void Move(float directionX, float directionY, float deltaTime);
 	

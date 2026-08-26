@@ -9,6 +9,7 @@
 #include <Actor/Enemy/Client.h>
 #include <Actor/Player.h>
 #include <Actor/Camera.h>
+#include <Actor/Item.h>
 #include <Render/Renderer.h>
 #include <Input/Input.h>
 #include <Util/Bresenham.h>
@@ -87,7 +88,10 @@ void GameLevel::IsSighted()
 {
 	for (const std::shared_ptr<Actor>& actor : actorList)
 	{
-		actor->SetIsSighted(SearchingActorGL(actor)); //실제 게임
+		actor->SetIsSighted(
+			(GetDebuger()) ? 
+			true :
+			SearchingActorGL(actor)); //실제 게임
 		//actor->SetIsSighted(true); //디버깅
 		if (	!actor->IsTypeOf<Enemy>()
 			//&& !actor->IsTypeOf<Ground>()
@@ -132,7 +136,7 @@ bool GameLevel::IsWall(const Craft::Vector2& currentPosition)
 	}
 
 	// 플레이어가 이동하려는 곳에 벽이 있을 경우 
-	if (currentPosition.x >= 0 && currentPosition.x >= 0)
+	if (currentPosition.x >= 0 && currentPosition.y >= 0)
 	{
 		if (map[currentPosition.y][currentPosition.x])
 		{
@@ -257,6 +261,7 @@ void GameLevel::Draw()
 		L"│                                                │\n"
 		L"│                                                │\n"
 		L"│                                                │\n"
+		L"├────────────────────────────────────────────────┤\n"
 		L"│                                                │\n"
 		L"│                                                │\n"
 		L"│                                                │\n"
@@ -266,8 +271,7 @@ void GameLevel::Draw()
 		L"│                                                │\n"
 		L"│                                                │\n"
 		L"│                                                │\n"
-		L"│                                                │\n"
-		L"│                                                │\n"
+		L"│                                                │\n" 
 		L"│                                                │\n"
 		L"│                                                │\n"
 		L"│                                                │\n"
@@ -280,8 +284,8 @@ void GameLevel::Draw()
 		L"└────────────────────────────────────────────────┘",
 		Vector2::Zero,
 		Color::Yellow,
-		0,
-		true
+		0, 
+		true 
 	);
 
 	//게임 클리어표시
@@ -305,6 +309,13 @@ void GameLevel::Tick(float deltaTime)
 	// Game에 결과 저장
 	game.SetGameStatus(targetClear, clientClear, isGameOver);
 	
+	if (Input::Get().GetKeyDown(VK_F2))
+	{ 
+		debugerTrigger = 1 - debugerTrigger;
+		SetDebuger( (debugerTrigger == 1) ? true : false );
+	}
+
+
 	// ESC 종료
 	if (Input::Get().GetKeyDown(VK_ESCAPE))
 	{
@@ -365,6 +376,7 @@ void GameLevel::LoadMap(const std::string& filename)
 	clearMap.emplace_back();
 	
 	//액터 생성에 사용할 위치값
+	int itemCount = 0;
 	Vector2 position = Vector2::Zero;
 	while (true)
 	{
@@ -398,10 +410,79 @@ void GameLevel::LoadMap(const std::string& filename)
 		{
 			map[position.y].emplace_back(0);
 		}
-
+		std::string itemPath;
+		std::shared_ptr<Item> itemActor;
+		long itemFileSize = 0;
+		FILE* itemFile = nullptr;
+		char* itemBuffer = nullptr;
+		size_t itemReadSize = 0;
+		int itemClueIndex = 0;
+		std::wstring newClue;
 		////읽은 문자별로 처리.
 		switch (mapCharacter)
 		{
+		case 'i':
+			itemActor = SpawnActor<Item>(position);
+			//최종 경로 조립
+			switch (itemCount)
+			{
+			case 0:
+				itemPath = std::string("../Assets/") + "item_1.txt";
+				++itemCount;
+				break;
+			case 1:
+				itemPath = std::string("../Assets/") + "item_2.txt";
+				++itemCount;
+				break;
+			case 2:
+				itemPath = std::string("../Assets/") + "item_3.txt";
+				break;
+			}
+
+			//파일 열기
+			fopen_s(&itemFile, itemPath.c_str(), "rt");
+			if (!itemFile)
+			{
+				assert(false && "failed to open a Item file.");
+				return;
+			}
+
+			// 파일의 내용을 저장할 버퍼(데이터 저장 공간)
+			// 파일 길이 확인 -> 파일 위치를 제일 뒤로 이동 시킨 뒤 값 읽기.
+			fseek(itemFile, 0, SEEK_END);
+			itemFileSize = ftell(itemFile);
+
+			// 파일 제일 끝 위치를  구한 다음에는 다시 처음으로 되돌리기
+			//fseek(file, 0, SEEK_END);
+			rewind(itemFile);
+
+			// 구한 위치를 사용해서 버퍼 생성
+			itemBuffer = new char[itemFileSize] {};
+
+			//데이터 읽기
+			itemReadSize = fread(itemBuffer, sizeof(char), itemFileSize, itemFile);
+			assert(itemReadSize > 0 && "No data in the Item file.");
+
+			itemClueIndex = 0;
+			newClue;
+			while (true)
+			{
+				if (itemClueIndex > itemFileSize)
+				{
+					break;
+				}
+				newClue.push_back(itemBuffer[itemClueIndex]);
+				++itemClueIndex;
+			}
+			itemActor->SetClue(newClue);
+
+
+			delete[] itemBuffer;
+			itemBuffer = nullptr;
+			fclose(itemFile);
+			itemFile = nullptr;
+
+			break;
 		case '#': //벽
 			SpawnActor<Wall>(position);
 			break;
@@ -433,8 +514,17 @@ void GameLevel::LoadMap(const std::string& filename)
 
 		//x위치 업데이트
 		++position.x;
+		if (itemBuffer != nullptr)
+		{
+			delete[] itemBuffer;
+			itemBuffer = nullptr;
+		}
+		if (itemFile != nullptr)
+		{
+			fclose(itemFile);
+			itemFile = nullptr;
+		}
 	}
-
 
 
 	//모두 사용한 버퍼해제
@@ -556,6 +646,10 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 	{
 		//std::vector<Vector2> rayDirectionQueue = RayDirectionQueueInsertGL(actorPos);
 		std::vector<Vector2> rayDirectionQueue = bresenham.BresenhamFinder(distance, playerPos, actorPos);
+		if (rayDirectionQueue.size())
+		{
+			rayDirectionQueue.pop_back(); // 경로가 해당 액터까지의 경로 저장이므로 마지막 경로 제외
+		}
 		bool isWall = false;
 		for (Vector2 path : rayDirectionQueue)
 		{

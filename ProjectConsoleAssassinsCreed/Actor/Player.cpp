@@ -22,18 +22,14 @@ Player::Player(const Vector2& position)
 	SetColiisionEnabled(true);
 }
 
+
+
 void Player::Tick(float deltaTime)
 {
 	//상위 객체 tick 호출
 	super::Tick(deltaTime);
 
-	Renderer::Get().ScreenSubmit(
-		L"P",
-		Vector2(position.x/10, position.y/20+ 1),
-		Color::White,
-		20,
-		true
-	);
+	MiniMapSubmit();
 
 	//프레임 관련 문자열
 	const int size = 256;
@@ -182,6 +178,23 @@ void Player::Tick(float deltaTime)
 		Move(directionX, directionY, deltaTime);
 		delay.Reset();
 	}
+}
+void Player::MiniMapSubmit()
+{
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+	Renderer::Get().ScreenSubmit(
+		L"P",
+		Vector2( static_cast<int>(
+			static_cast<float>(position.x) 
+			/ (static_cast<float>(level->GetMap().size()) / 49)),
+			1 + 	static_cast<int>(
+			static_cast<float>(position.y)
+			/ (static_cast<float>(level->GetMap().size()) / 8))
+		), 
+		Color::White,
+		20,
+		true
+	);
 }
 void Player::Move(float directionX, float directionY, float deltaTime)
 {

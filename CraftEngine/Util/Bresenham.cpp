@@ -161,13 +161,19 @@ std::vector<Vector2> Bresenham::CalcBresenham(const Vector2& startPosition, cons
 		};
 	while (currentPosition != destination)
 	{
+		if (currentPosition.x > map.size() || currentPosition.y > map[0].size()
+			|| currentPosition.x < 0 || currentPosition.y < 0)
+		{
+			std::vector<Vector2> a;
+			return a;
+		}
 		currentPosition = currentPosition + mainFace; 
 		currentPosition = ( // 더 가까운 점 선택
 			std::abs( LineFunc(currentPosition + subFace) ) > std::abs( LineFunc(currentPosition) ) ) 
 			? currentPosition : currentPosition + subFace; 
 		bresenhamPath.emplace_back(currentPosition);
 	} 
-	bresenhamPath.pop_back(); // 목적지는 제외
+	//bresenhamPath.pop_back(); // 목적지는 제외
 	// 정식 때는 이거 주석 처리해서 화살이 플레이어까지 닿게 하고
 	// Todo : 게임 레벨에서 벽 처리할 때 한 칸 덜 체크하게 해야함
 
