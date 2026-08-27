@@ -21,7 +21,6 @@ Guard::Guard(const Vector2& position)
 	SetFace(Vector2::Left);
 	//충돌 허용
 	SetColiisionEnabled(true);
-
 }
 
 void Guard::Tick(float deltaTime)
@@ -29,6 +28,19 @@ void Guard::Tick(float deltaTime)
 	super::Tick(deltaTime);
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	delay.Tick(deltaTime);
+
+	if (found)
+	{
+		sightRange = 30.f;
+		sightDegree = 70;
+		SetMoveSpeed(8.0f);
+	}
+	else
+	{
+
+		sightRange = 15.f;
+		sightDegree = 45;
+	}
 
 	if (!sleep && found
 		&& doneAttack && !doAttack)

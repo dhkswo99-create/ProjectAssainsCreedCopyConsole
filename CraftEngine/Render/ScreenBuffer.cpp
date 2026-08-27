@@ -24,7 +24,8 @@ namespace Craft
 		SMALL_RECT rect = {};
 		rect.Top = 0;
 		rect.Left = 0;
-		rect.Right = static_cast<short> (size.x -1);
+
+		rect.Right = static_cast<short> (size.x - 1);
 		rect.Bottom = static_cast<short> (size.y -1);
 		//화면 버퍼 크기 설정
 		BOOL result = SetConsoleScreenBufferSize(buffer, size);
@@ -46,10 +47,9 @@ namespace Craft
 
 		//커서 안보이게 설정
 		info.bVisible = FALSE;
+
 		result = SetConsoleCursorInfo(buffer, &info);
 		assert(result == TRUE);
-	
-
 	}
 	ScreenBuffer::~ScreenBuffer()
 	{

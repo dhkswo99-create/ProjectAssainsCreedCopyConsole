@@ -70,6 +70,7 @@ protected:
 	int range = 7;
 	//시야반경
 	float sightRange = 10;
+	double sightDegree = 45; //45도
 	//이동속도
 	float moveSpeed = 3.0f;
 	//플레이어와의 거리
@@ -98,7 +99,6 @@ private:
 	double relativeAngle;
 
 	//시야각
-	double sightDegree = 45; //45도
 
 	bool caller = false;
 

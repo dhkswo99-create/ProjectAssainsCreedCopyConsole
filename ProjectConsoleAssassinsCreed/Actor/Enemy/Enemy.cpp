@@ -6,6 +6,7 @@
 #include <Util/Bresenham.h>
 #include <Render/Renderer.h>
 #include <Input/Input.h>
+#include <Util/Util.h>
 #include <cmath>
 
 #define ANGLE 180/3.14
@@ -26,6 +27,49 @@ void Enemy::Tick(float deltaTime)
 	super::Tick(deltaTime);
 
 	found = Searching();
+
+	if (!found && moveIndex <= 0)
+	{ // 무작위 패트롤
+		std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+		Bresenham bresenham(level->GetMap());
+		int ran = rand();
+		int ran_1 = ran % 41;
+		int ran_2 = ran % 79;
+		int ran_3 = ran % 111;
+		int ran_4 = ran % 1901;
+		SetMoveSpeed(1.0f);
+		int posX = GetPosition().x
+			+ (ran_1 % 3 - 1) * (ran_2 % 5);
+		int posY = GetPosition().y
+			+ (ran_3 % 3 - 1) * (ran_4 % 5);
+		if (GetPosition().x + posX >= level->GetMap().size()
+			&& 0 >= GetPosition().x + posX)
+		{
+			posX = -posX;
+		}
+		if (GetPosition().y + posY >= level->GetMap().size()
+			&& 0 >= GetPosition().y + posY)
+		{
+			posY = -posY;
+		}
+		std::vector<Vector2> patrol_route = bresenham.BresenhamFinder(
+			std::sqrt(std::pow(position.x - posX, 2)
+				+ std::pow(position.y - posY, 2)),
+			position,
+			Vector2(posX, posY));
+		if (patrol_route.size() > 1)
+		{
+			Vector2 previousPatrol = position;
+			for (Vector2 currentPatrol : patrol_route)
+			{
+				pathDirection.emplace_back(currentPatrol - previousPatrol);
+
+				previousPatrol = currentPatrol;
+			}
+			moveIndex = pathDirection.size() - 1;
+		}
+	}
+
 
 	// Enemy 방향에 맞게 조정
 	int faceCheck = face.x * 3 + face.y;
@@ -78,6 +122,20 @@ std::vector<Vector2> Enemy::FindRoute(const Vector2& destination)
 	Vector2 Start = GetPosition();
 	Astar routeFinder(map, Start, level->GetPlayerPosition());
 	std::vector<Vector2> moveStack = routeFinder.AstarFinder(map, Start, destination);
+	if (level->GetDebuger())
+	{
+		Vector2 currentPos = Start;
+		for (Vector2 path : moveStack)
+		{
+			Renderer::Get().Submit(
+				L"⅓",
+				currentPos = currentPos + path,
+				Color::Green,
+				1,
+				true
+			);
+		}
+	}
 	moveIndex = static_cast<int>(moveStack.size() - 1);
 	return moveStack;
 }
@@ -102,6 +160,11 @@ void Enemy::Move(const Vector2& direction, float deltaTime)
 			dy = 0;
 			--moveIndex;
 		}
+		else
+		{
+			pathDirection.clear();
+			moveIndex = 0;
+		}
 	}
 }
 
@@ -120,7 +183,7 @@ bool Enemy::Searching()
 	Bresenham bresenham(level->GetMap());
 	Vector2 playerPos = level->GetPlayerPosition();
 	Vector2 myPos = GetPosition();
-	distance = 
+	distance =
 		(playerPos.x - myPos.x)
 		* (playerPos.x - myPos.x)
 		+ (playerPos.y - myPos.y)
@@ -149,10 +212,25 @@ bool Enemy::Searching()
 	}
 	// 직선 경로
 	std::vector<Vector2> rayDirectionQueue = bresenham.BresenhamFinder(distance, myPos, playerPos);
+
+	if (rayDirection.size() != 0)
+	{
+		rayDirection.pop_back();
+	}
 	//std::vector<Vector2> rayDirectionQueue = RayDirectionQueueInsert(myPos);
 	isWall = false;
 	for (Vector2 path : rayDirectionQueue)
 	{
+		if (level->GetDebuger())
+		{
+			Renderer::Get().Submit(
+				L"#",
+				path,
+				Color::White,
+				1,
+				true
+			);
+		}
 		isWall = level->IsWall(path);
 		if (isWall)
 		{
@@ -173,19 +251,6 @@ bool Enemy::Searching()
 				&& relativeAngle > -1 * sightDegree)
 			)
 		{
-			if (level->GetDebuger())
-			{
-				for (Vector2 path : rayDirectionQueue)
-				{
-					Renderer::Get().Submit(
-						L"⅓",
-						path,
-						Color::Green,
-						1,
-						true
-					);
-				}
-			}
 			return true;
 		}
 	}

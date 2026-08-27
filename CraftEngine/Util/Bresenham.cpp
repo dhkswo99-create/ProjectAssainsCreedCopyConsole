@@ -38,8 +38,9 @@ std::vector<Vector2> Bresenham::BresenhamFinder(const float distance, const Vect
         (- startPosition.x + destination.x)
         );
     float absRightVector = 1;//(1,0)
-
-    double bresenhamAngle = acos(innerProduct_RightVector / (distance)) * ANGLE;
+	
+    double bresenhamAngle = acos((innerProduct_RightVector > abs(distance) ||
+		innerProduct_RightVector < abs(distance)) ? distance : innerProduct_RightVector / (distance)) * ANGLE;
 
 	// 적용할 브레젠함 결정.
 	Vector2 bresenhamFace = CalcAngle(startPosition, destination, bresenhamAngle);
@@ -158,7 +159,7 @@ std::vector<Vector2> Bresenham::CalcBresenham(const Vector2& startPosition, cons
 	auto LineFunc = [dx, dy, startPosition, currentPosition](const Vector2& sub)
 		{ // 직선으로부터 떨어진 거리 계산
 			return dx * (sub.y - startPosition.y) - dy * (sub.x - startPosition.x);
-		};
+		}; //함수포인터로 작선한 의미는 딱히 없음 써보고 싶었음..
 	while (currentPosition != destination)
 	{
 		if (currentPosition.x > map.size() || currentPosition.y > map[0].size()

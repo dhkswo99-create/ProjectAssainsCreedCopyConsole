@@ -2,6 +2,7 @@
 #include <Input/Input.h>
 #include <Level/GameLevel.h>
 #include <Actor/Sword.h>
+#include <Actor/Item/Item.h>
 #include <Render/Renderer.h>
 #include <Game/Game.h>
 
@@ -274,6 +275,19 @@ void Player::Attack(const int range, const Vector2& face, float deltaTime)
 			swordPath.x += face.x;
 			swordPath.y += face.y;
 			owner->SpawnActor<Sword>(swordPath);
+		}
+	}
+}
+
+void Player::OnCollision(const std::shared_ptr<Actor>& other)
+{
+	if (Input::Get().GetKey('f')
+		|| Input::Get().GetKey('F'))
+	//if(true)
+	{
+		if (other->IsTypeOf<Clue>())
+		{
+			other->Destroy();
 		}
 	}
 }

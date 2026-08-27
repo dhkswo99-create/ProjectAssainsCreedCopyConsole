@@ -20,6 +20,8 @@ public:
 	void Attack(const int range, const Craft::Vector2& face, float deltaTime);
 
 	void SetRange(int newRange) { range = newRange; }
+	
+	virtual void OnCollision(const std::shared_ptr<Actor>& other) override;
 
 
 private:

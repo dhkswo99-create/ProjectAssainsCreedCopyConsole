@@ -9,7 +9,8 @@
 #include <Actor/Enemy/Client.h>
 #include <Actor/Player.h>
 #include <Actor/Camera.h>
-#include <Actor/Item.h>
+#include <Actor/Item/Item.h>
+#include <Actor/Item/Clue.h>
 #include <Render/Renderer.h>
 #include <Input/Input.h>
 #include <Util/Bresenham.h>
@@ -87,7 +88,7 @@ bool GameLevel::CanAttack(const Craft::Vector2& playerPosition, const Craft::Vec
 void GameLevel::IsSighted()
 {
 	for (const std::shared_ptr<Actor>& actor : actorList)
-	{
+	{	
 		actor->SetIsSighted(
 			(GetDebuger()) ? 
 			true :
@@ -237,6 +238,74 @@ Vector2 GameLevel::FacingDirectionGL(const Vector2& currentPos, const Vector2& a
 }
 // 위 두 함수들을 이용해 플레이어 시야 내에 객체가 존재하는지 판별.
 
+void GameLevel::ItemOnCollision(const std::wstring DropKey)
+{
+	Renderer::Get().ScreenSubmit(
+		L"Press " + DropKey + L"!!",
+		Vector2(22, 10),
+		Color::White,
+		2,
+		true
+	);
+}
+
+void GameLevel::DropClue(const std::wstring newclue)
+{
+	if (clue1.size() == 0)
+	{
+		clue1 = newclue;
+		ClueGet(bGetClue1);
+	}
+	else if (clue2.size() == 0)
+	{
+		clue2 = newclue;
+		ClueGet(bGetClue2);
+	}
+	else if (clue3.size() == 0)
+	{
+		clue3 = newclue;
+		ClueGet(bGetClue3);
+	}
+	else
+	{
+		return;//일단은 최대 단서 갯수 3개
+	}
+}
+
+void GameLevel::SubmitClue()
+{
+	if (bGetClue1)
+	{
+		Renderer::Get().ScreenSubmit(
+			clue1,
+			Vector2(3, 14),
+			Color::White,
+			2,
+			true
+		);
+	}
+	if (bGetClue2)
+	{
+		Renderer::Get().ScreenSubmit(
+			clue2,
+			Vector2(3, 15),
+			Color::White,
+			2,
+			true
+		);
+	}
+	if (bGetClue3)
+	{
+		Renderer::Get().ScreenSubmit(
+			clue3,
+			Vector2(3, 16),
+			Color::White,
+			2,
+			true
+		);
+	}
+}
+
 void GameLevel::OnInitialized()
 {
 	//상위 개체 호출
@@ -263,9 +332,9 @@ void GameLevel::Draw()
 		L"│                                                │\n"
 		L"├────────────────────────────────────────────────┤\n"
 		L"│                                                │\n"
+		L"├────────────────────────────────────────────────┤\n"
 		L"│                                                │\n"
-		L"│                                                │\n"
-		L"│                                                │\n"
+		L"├────────────────────────────────────────────────┤\n"
 		L"│                                                │\n"
 		L"│                                                │\n"
 		L"│                                                │\n"
@@ -287,7 +356,7 @@ void GameLevel::Draw()
 		0, 
 		true 
 	);
-
+	SubmitClue();
 	//게임 클리어표시
 	if (isGameOver
 		|| targetClear
@@ -305,6 +374,14 @@ void GameLevel::Tick(float deltaTime)
 	super::Tick(deltaTime);
 	SetGameStatus();
 	Game& game = dynamic_cast<Game&>(Engine::Get());
+
+	Renderer::Get().ScreenSubmit(
+		L"Eliminate Target.",
+		Vector2(17, 12),
+		Color::White,
+		2,
+		true
+	);
 
 	// Game에 결과 저장
 	game.SetGameStatus(targetClear, clientClear, isGameOver);
@@ -376,7 +453,7 @@ void GameLevel::LoadMap(const std::string& filename)
 	clearMap.emplace_back();
 	
 	//액터 생성에 사용할 위치값
-	int itemCount = 0;
+	int clueCount = 0;
 	Vector2 position = Vector2::Zero;
 	while (true)
 	{
@@ -410,38 +487,38 @@ void GameLevel::LoadMap(const std::string& filename)
 		{
 			map[position.y].emplace_back(0);
 		}
-		std::string itemPath;
-		std::shared_ptr<Item> itemActor;
-		long itemFileSize = 0;
-		FILE* itemFile = nullptr;
-		char* itemBuffer = nullptr;
-		size_t itemReadSize = 0;
-		int itemClueIndex = 0;
+		std::string cluePath;
+		std::shared_ptr<Clue> clueActor;
+		long clueFileSize = 0;
+		FILE* clueFile = nullptr;
+		char* clueBuffer = nullptr;
+		size_t clueReadSize = 0;
+		int clueIndex = 0;
 		std::wstring newClue;
 		////읽은 문자별로 처리.
 		switch (mapCharacter)
 		{
 		case 'i':
-			itemActor = SpawnActor<Item>(position);
+			clueActor = SpawnActor<Clue>(position);
 			//최종 경로 조립
-			switch (itemCount)
+			switch (clueCount)
 			{
 			case 0:
-				itemPath = std::string("../Assets/") + "item_1.txt";
-				++itemCount;
+				cluePath = std::string("../Assets/") + "clue_1.txt";
+				++clueCount;
 				break;
 			case 1:
-				itemPath = std::string("../Assets/") + "item_2.txt";
-				++itemCount;
+				cluePath = std::string("../Assets/") + "clue_2.txt";
+				++clueCount;
 				break;
 			case 2:
-				itemPath = std::string("../Assets/") + "item_3.txt";
+				cluePath = std::string("../Assets/") + "clue_3.txt";
 				break;
 			}
 
 			//파일 열기
-			fopen_s(&itemFile, itemPath.c_str(), "rt");
-			if (!itemFile)
+			fopen_s(&clueFile, cluePath.c_str(), "rt");
+			if (!clueFile)
 			{
 				assert(false && "failed to open a Item file.");
 				return;
@@ -449,38 +526,38 @@ void GameLevel::LoadMap(const std::string& filename)
 
 			// 파일의 내용을 저장할 버퍼(데이터 저장 공간)
 			// 파일 길이 확인 -> 파일 위치를 제일 뒤로 이동 시킨 뒤 값 읽기.
-			fseek(itemFile, 0, SEEK_END);
-			itemFileSize = ftell(itemFile);
+			fseek(clueFile, 0, SEEK_END);
+			clueFileSize = ftell(clueFile);
 
 			// 파일 제일 끝 위치를  구한 다음에는 다시 처음으로 되돌리기
 			//fseek(file, 0, SEEK_END);
-			rewind(itemFile);
+			rewind(clueFile);
 
 			// 구한 위치를 사용해서 버퍼 생성
-			itemBuffer = new char[itemFileSize] {};
+			clueBuffer = new char[clueFileSize] {};
 
 			//데이터 읽기
-			itemReadSize = fread(itemBuffer, sizeof(char), itemFileSize, itemFile);
-			assert(itemReadSize > 0 && "No data in the Item file.");
+			clueReadSize = fread(clueBuffer, sizeof(char), clueFileSize, clueFile);
+			assert(clueReadSize > 0 && "No data in the Item file.");
 
-			itemClueIndex = 0;
+			clueIndex = 0;
 			newClue;
 			while (true)
 			{
-				if (itemClueIndex > itemFileSize)
+				if (clueIndex >= clueFileSize)
 				{
 					break;
 				}
-				newClue.push_back(itemBuffer[itemClueIndex]);
-				++itemClueIndex;
+				newClue.push_back(clueBuffer[clueIndex]);
+				++clueIndex;
 			}
-			itemActor->SetClue(newClue);
+			clueActor->SetClue(newClue);
 
 
-			delete[] itemBuffer;
-			itemBuffer = nullptr;
-			fclose(itemFile);
-			itemFile = nullptr;
+			delete[] clueBuffer;
+			clueBuffer = nullptr;
+			fclose(clueFile);
+			clueFile = nullptr;
 
 			break;
 		case '#': //벽
@@ -514,15 +591,15 @@ void GameLevel::LoadMap(const std::string& filename)
 
 		//x위치 업데이트
 		++position.x;
-		if (itemBuffer != nullptr)
+		if (clueBuffer != nullptr)
 		{
-			delete[] itemBuffer;
-			itemBuffer = nullptr;
+			delete[] clueBuffer;
+			clueBuffer = nullptr;
 		}
-		if (itemFile != nullptr)
+		if (clueFile != nullptr)
 		{
-			fclose(itemFile);
-			itemFile = nullptr;
+			fclose(clueFile);
+			clueFile = nullptr;
 		}
 	}
 
@@ -597,8 +674,31 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 	Vector2 actorPos = actor->GetPosition();
 	if (actor->IsTypeOf<Player>())
 	{
+		if (bDebuger)
+		{ //디버그 모드 플레이어 시야 
+			int sightPosX = (playerPos.x - 4 > 0) ? playerPos.x - 4 : 0;
+			int sightPosY = (playerPos.y - 4 > 0) ? playerPos.y - 4 : 0;
+			for (; sightPosX <= playerPos.x + 4; ++sightPosX)
+			{
+				for (;sightPosY <= playerPos.y + 4; ++sightPosY)
+				{
+					if (sightPosX == playerPos.x && sightPosY == playerPos.y)
+					{
+						continue;
+					}
+					Renderer::Get().Submit(
+						L"█",
+						Vector2(sightPosX, sightPosY),
+						Color::Green,
+						-1,
+						true
+					);
+				}
+			}
+		}
 		return true;
 	}
+	
 	float distance = // 거리로 조건문 처리할 때는 제곱 형태로 두고 계산하여 성능 향상 
 		(playerPos.x - actorPos.x)
 		* (playerPos.x - actorPos.x)

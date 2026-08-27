@@ -108,7 +108,8 @@
     <ClCompile Include="Actor\Enemy\Target.cpp" />
     <ClCompile Include="Actor\Ground.cpp" />
     <ClCompile Include="Actor\Enemy\Guard.cpp" />
-    <ClCompile Include="Actor\Item.cpp" />
+    <ClCompile Include="Actor\Item\Clue.cpp" />
+    <ClCompile Include="Actor\Item\Item.cpp" />
     <ClCompile Include="Actor\Player.cpp" />
     <ClCompile Include="Actor\Sword.cpp" />
     <ClCompile Include="Actor\Wall.cpp" />
@@ -128,7 +129,8 @@
     <ClInclude Include="Actor\Enemy\Target.h" />
     <ClInclude Include="Actor\Ground.h" />
     <ClInclude Include="Actor\Enemy\Guard.h" />
-    <ClInclude Include="Actor\Item.h" />
+    <ClInclude Include="Actor\Item\Clue.h" />
+    <ClInclude Include="Actor\Item\Item.h" />
     <ClInclude Include="Actor\Player.h" />
     <ClInclude Include="Actor\Sword.h" />
     <ClInclude Include="Actor\Wall.h" />

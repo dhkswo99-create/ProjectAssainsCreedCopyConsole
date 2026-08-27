@@ -29,7 +29,7 @@ Arrow::Arrow(const Vector2& position, const std::vector<Vector2>& arrowPath)
 	Vector2 destination = arrowPath[arrowPath.size() - 1];
 	sortingOrder = 1;
 	isSighted = true;
-	timer.SetTargetTime(0.07f);
+	timer.SetTargetTime(0.05f);
 	int count = 0;
 	Vector2 previousPath;
 	Vector2 face;

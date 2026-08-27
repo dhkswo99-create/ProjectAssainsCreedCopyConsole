@@ -79,7 +79,7 @@ void StartLevel::Draw()
 	Renderer::Get().ScreenSubmit(
 		L"AssainsCreed2D\n"
 		L"Product by WJ ",
-		Vector2(-2, -4),
+		Vector2(53, 10),
 		Color::White,
 		0,
 		true
@@ -96,10 +96,11 @@ void StartLevel::Draw()
 		//아이템 그리기
 		Renderer::Get().ScreenSubmit(
 			itemList[ix]->text,
-			Vector2(0, 2 + ix),
+			Vector2(55, 20 + ix),
 			textColor,
 			0,
 			true
 		);
 	}
 }
+ 

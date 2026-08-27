@@ -4,6 +4,7 @@
 #include <Actor/Arrow.h>
 #include <Util/Bresenham.h>
 
+
 using namespace Craft; 
 
 Archer::Archer(const Vector2& position)
@@ -13,7 +14,7 @@ Archer::Archer(const Vector2& position)
 	runRange = 5.0f;
 	//공격 범위
 	range = 14;
-	sightRange = 18;
+	sightRange = 20;
 	moveSpeed = 5.0f;
 	sortingOrder = 3;
 	castDelay = 1.0f;
@@ -32,6 +33,18 @@ void Archer::Tick(float deltaTime)
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	delay.Tick(deltaTime);
 
+	if (found)
+	{
+		sightRange = 35.f;
+		sightDegree = 90;
+		SetMoveSpeed(5.0f);
+	}
+	else
+	{
+
+		sightRange = 18.f;
+		sightDegree = 45;
+	}
 
 	if (!sleep && found
 		&& doneAttack && !doAttack)

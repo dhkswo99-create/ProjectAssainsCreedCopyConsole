@@ -2,6 +2,7 @@
 
 #include <Level/Level.h>
 #include <Actor/Player.h>
+#include <Actor/Item/Clue.h>
 
 
 class Camera;
@@ -38,6 +39,17 @@ public:
 	std::vector<std::vector<int>>& GetMap() { return map; }
 	std::vector<std::vector<int>> GetClearMap() { return clearMap; }
 
+	//아이템 충돌 이벤트 Press F 출력
+	void ItemOnCollision(const std::wstring DropKey);
+	//단서를 얻었을 때 이벤트
+	void DropClue(const std::wstring newclue);
+
+	void ClueGet(bool& getClue)
+	{
+		getClue = true;
+	}
+	void SubmitClue();
+
 private:
 	void SetDebuger(const bool debuger) { bDebuger = debuger; }
 	//레벨 초기화 함수
@@ -59,6 +71,14 @@ private:
 	void SetGameStatus();
 
 private:
+	std::wstring clue1;
+	std::wstring clue2;
+	std::wstring clue3;
+	bool bGetClue1 = false;
+	bool bGetClue2 = false;
+	bool bGetClue3 = false;
+
+
 	//토글처리
 	int debugerTrigger = 0;
 	bool bDebuger = false;
