@@ -124,7 +124,7 @@ void Archer::Attack(int range, const Vector2& face, float deltaTime)
 }
 
 void Archer::WillAttack()
-{
+{	
 	doAttack = true;
 }
 

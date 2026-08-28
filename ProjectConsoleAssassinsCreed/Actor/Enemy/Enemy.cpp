@@ -31,7 +31,7 @@ void Enemy::Tick(float deltaTime)
 	if (!found && moveIndex <= 0)
 	{ // 무작위 패트롤
 		std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
-		Bresenham bresenham(level->GetMap());
+		Astar patrolFinder(map = level->GetMap());
 		int ran = rand();
 		int ran_1 = ran % 41;
 		int ran_2 = ran % 79;
@@ -52,20 +52,11 @@ void Enemy::Tick(float deltaTime)
 		{
 			posY = -posY;
 		}
-		std::vector<Vector2> patrol_route = bresenham.BresenhamFinder(
-			std::sqrt(std::pow(position.x - posX, 2)
-				+ std::pow(position.y - posY, 2)),
+		pathDirection = patrolFinder.AstarFinder(map,
 			position,
 			Vector2(posX, posY));
-		if (patrol_route.size() > 1)
+		if (pathDirection.size() > 1)
 		{
-			Vector2 previousPatrol = position;
-			for (Vector2 currentPatrol : patrol_route)
-			{
-				pathDirection.emplace_back(currentPatrol - previousPatrol);
-
-				previousPatrol = currentPatrol;
-			}
 			moveIndex = pathDirection.size() - 1;
 		}
 	}
@@ -120,7 +111,7 @@ std::vector<Vector2> Enemy::FindRoute(const Vector2& destination)
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	map = level->GetMap();
 	Vector2 Start = GetPosition();
-	Astar routeFinder(map, Start, level->GetPlayerPosition());
+	Astar routeFinder(map);
 	std::vector<Vector2> moveStack = routeFinder.AstarFinder(map, Start, destination);
 	if (level->GetDebuger())
 	{

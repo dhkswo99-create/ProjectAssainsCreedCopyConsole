@@ -242,7 +242,7 @@ void GameLevel::ItemOnCollision(const std::wstring DropKey)
 {
 	Renderer::Get().ScreenSubmit(
 		L"Press " + DropKey + L"!!",
-		Vector2(22, 10),
+		Vector2(22, 22),
 		Color::White,
 		2,
 		true
@@ -278,7 +278,7 @@ void GameLevel::SubmitClue()
 	{
 		Renderer::Get().ScreenSubmit(
 			clue1,
-			Vector2(3, 14),
+			Vector2(3, 26),
 			Color::White,
 			2,
 			true
@@ -288,7 +288,7 @@ void GameLevel::SubmitClue()
 	{
 		Renderer::Get().ScreenSubmit(
 			clue2,
-			Vector2(3, 15),
+			Vector2(3, 27),
 			Color::White,
 			2,
 			true
@@ -298,7 +298,7 @@ void GameLevel::SubmitClue()
 	{
 		Renderer::Get().ScreenSubmit(
 			clue3,
-			Vector2(3, 16),
+			Vector2(3, 28),
 			Color::White,
 			2,
 			true
@@ -313,7 +313,7 @@ void GameLevel::OnInitialized()
 
 
 	//파일을 읽어서 맵 로드
-	LoadMap("ACMap.txt"); 
+	LoadMap("map_500x500.txt"); 
 
 }
 
@@ -330,11 +330,31 @@ void GameLevel::Draw()
 		L"│                                                │\n"
 		L"│                                                │\n"
 		L"│                                                │\n"
-		L"├────────────────────────────────────────────────┤\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n" 
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
 		L"│                                                │\n"
 		L"├────────────────────────────────────────────────┤\n"
 		L"│                                                │\n"
 		L"├────────────────────────────────────────────────┤\n"
+		L"│                                                │\n"
+		L"├────────────────────────────────────────────────┤\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n"
+		L"│                                                │\n" 
+		L"│                                                │\n"
+		L"│                                                │\n"
 		L"│                                                │\n"
 		L"│                                                │\n"
 		L"│                                                │\n"
@@ -377,7 +397,7 @@ void GameLevel::Tick(float deltaTime)
 
 	Renderer::Get().ScreenSubmit(
 		L"Eliminate Target.",
-		Vector2(17, 12),
+		Vector2(17, 24),
 		Color::White,
 		2,
 		true
@@ -708,7 +728,7 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 	{
 		return true;
 	}
-	else if (distance > 20 * 20)
+	else if (distance > 30 * 30)
 	{
 		return false;
 	}

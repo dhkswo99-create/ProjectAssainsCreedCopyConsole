@@ -102,7 +102,7 @@ void Guard::Attack(int range, const Vector2&face, float deltaTime)
 		{
 			swordPath.x += face.x;
 			swordPath.y += face.y;
-			owner->SpawnActor<Sword>(swordPath);
+			//owner->SpawnActor<Sword>(swordPath);
 		}
 	}
 }

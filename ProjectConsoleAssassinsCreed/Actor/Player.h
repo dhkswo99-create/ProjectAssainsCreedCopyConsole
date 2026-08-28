@@ -2,6 +2,7 @@
 
 #include <Actor/Actor.h>
 #include <Util/Timer.h>
+#include <vector>
 
 class Player : public Craft::Actor
 {
@@ -26,6 +27,24 @@ public:
 
 private:
 	virtual void Tick(float deltaTime) override;
+
+	// 검 궤적 계산 
+	Craft::Vector2 CalMatrix(const Craft::Vector2& face, int matrix0, int matrix1, int matrix2, int matrix3);
+	bool CalcSwordRoute(const Craft::Vector2& face, const Craft::Vector2& position);
+	std::vector<Craft::Vector2> GetSwordNearRoute() { return swordNearRoute; }
+	std::vector<Craft::Vector2> GetSwordMiddleRoute() { return swordMiddleRoute; }
+	std::vector<Craft::Vector2> GetSwordFarRoute() { return swordFarRoute; }
+
+
+private:
+	//검 궤적 계산 변수
+	int positive90Degree[4] = {0, -1, 1, 0};
+	int positive45Degree[4] = {1, -1, 1, 1};
+	int negative45Degree[4] = {1, 1, -1, 1};
+	int negative90Degree[4] = {0, 1, -1, 0};
+	std::vector<Craft::Vector2> swordNearRoute;
+	std::vector<Craft::Vector2> swordMiddleRoute;
+	std::vector<Craft::Vector2> swordFarRoute;
 
 	// 공격 요청 변수
 	bool doAttack = false;

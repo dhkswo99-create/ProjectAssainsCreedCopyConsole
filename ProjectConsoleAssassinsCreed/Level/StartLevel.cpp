@@ -12,7 +12,7 @@ StartLevel::StartLevel()
 	//메뉴 아이템 생성 
 	itemList.emplace_back(
 		std::make_unique<StartItem>(
-			L"start Game",
+			L"Start Game",
 			[]()
 			{
 				//메뉴 토글 함수 호출

@@ -76,7 +76,7 @@ void Player::Tick(float deltaTime)
 	{
 		buff.SetTargetTime(buffDuration);
 		buff.Reset();
-		moveSpeed = 20.0f;
+		moveSpeed = 50.0f;
 	}
 	if (buff.IsTimeOut())
 	{
@@ -93,7 +93,11 @@ void Player::Tick(float deltaTime)
 		delay.SetTargetTime(castDelay);
 		if (delay.IsTimeOut())
 		{
- 			Attack(range, face, deltaTime);
+			CalcSwordRoute(GetFace(), GetPosition());
+  			Attack(range, face, deltaTime);
+			swordNearRoute.clear();
+			swordMiddleRoute.clear();
+			swordFarRoute.clear();
 			doneAttack = false;
 			doAttack = false;
 			delay.Reset();
@@ -180,6 +184,134 @@ void Player::Tick(float deltaTime)
 		delay.Reset();
 	}
 }
+Vector2 Player::CalMatrix(const Vector2& face, int matrix0, int matrix1, int matrix2, int matrix3)
+{
+	Vector2 a = Vector2( // 대각선을 바라보고 45도 계산이라면
+		(face.x * face.y != 0 && matrix0 == 1) ?
+		Vector2((face.x * matrix0 + face.y * matrix2) / 2,
+			(face.x * matrix1 + face.y * matrix3) / 2)
+		: Vector2(face.x * matrix0 + face.y * matrix2,
+			face.x * matrix1 + face.y * matrix3));
+	return a;
+}
+bool Player::CalcSwordRoute(const Vector2& face, const Vector2& position)
+{
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+
+	Vector2 negative90face = CalMatrix(face, negative90Degree[0], negative90Degree[1],
+		negative90Degree[2], negative90Degree[3]);
+	Vector2 negative45face = CalMatrix(face, negative45Degree[0], negative45Degree[1],
+		negative45Degree[2], negative45Degree[3]);
+	Vector2 positive45face = CalMatrix(face, positive45Degree[0], positive45Degree[1],
+		positive45Degree[2], positive45Degree[3]);
+	Vector2 positive90face = CalMatrix(face, positive90Degree[0], positive90Degree[1],
+		positive90Degree[2], positive90Degree[3]);
+	//검 궤적
+	if (face.x * face.y == 0)
+	{
+		if (!level->CanAttack(position, negative90face)) { return false; }
+		swordNearRoute.emplace_back(position + negative90face); //1-1
+		if (!level->CanAttack(position + negative90face, negative90face)) { return false; }
+		swordMiddleRoute.emplace_back(position + negative90face + negative90face); //1-2
+		if (!level->CanAttack(position + negative90face + negative90face, negative90face)) { return false; }
+		swordFarRoute.emplace_back(position + negative90face + negative90face + negative90face); //1-3
+
+		if (!level->CanAttack(position, negative90face)) { return false; }
+		swordNearRoute.emplace_back(position + negative90face); //2-1
+		if (!level->CanAttack(position + negative90face, negative90face)) { return false; }
+		swordMiddleRoute.emplace_back(position + negative90face + negative45face); //2-2
+		if (!level->CanAttack(position + negative90face + negative90face, negative45face)) { return false; }
+		swordFarRoute.emplace_back(position + negative90face + negative90face + negative45face); //2-3
+
+		if (!level->CanAttack(position, negative45face)) { return false; }
+		swordNearRoute.emplace_back(position + negative45face); //3-1
+		if (!level->CanAttack(position + negative45face, negative45face)) { return false; }
+		swordMiddleRoute.emplace_back(position + negative45face + negative45face); //3-2
+		if (!level->CanAttack(position + negative45face, negative45face)) { return false; }
+		swordFarRoute.emplace_back(position + negative45face + negative45face); //3-3
+
+		if (!level->CanAttack(position, face)) { return false; }
+		swordNearRoute.emplace_back(position + face); //4-1
+		if (!level->CanAttack(position + negative45face, face)) { return false; }
+		swordMiddleRoute.emplace_back(position + negative45face + face); //4-2
+		if (!level->CanAttack(position + negative45face, negative45face)) { return false; }
+		swordFarRoute.emplace_back(position + negative45face + negative45face); //4-3
+
+		if (!level->CanAttack(position, face)) { return false; }
+		swordNearRoute.emplace_back(position + face); //5-1
+		if (!level->CanAttack(position + face, face)) { return false; }
+		swordMiddleRoute.emplace_back(position + face + face); //5-2
+		if (!level->CanAttack(position + face + face, face)) { return false; }
+		swordFarRoute.emplace_back(position + face + face + face); //5-3
+
+		if (!level->CanAttack(position, positive45face)) { return false; }
+		swordNearRoute.emplace_back(position + positive45face); //6-1
+		if (!level->CanAttack(position + face, positive45face)) { return false; }
+		swordMiddleRoute.emplace_back(position + face + positive45face); //6-2
+		if (!level->CanAttack(position + face, positive45face)) { return false; }
+		swordFarRoute.emplace_back(position + face + positive45face); //6-3
+
+		if (!level->CanAttack(position, positive45face)) { return false; }
+		swordNearRoute.emplace_back(position + positive45face); //7 -1
+		if (!level->CanAttack(position + positive45face, positive90face)) { return false; }
+		swordMiddleRoute.emplace_back(position + positive45face + positive90face); //7-2
+		if (!level->CanAttack(position + positive45face, positive45face)) { return false; }
+		swordFarRoute.emplace_back(position + positive45face + positive45face); //7-3
+	}
+	else
+	{
+		if (!level->CanAttack(position, negative90face)) { return false; }
+		swordNearRoute.emplace_back(position + negative90face); //1-1
+		if (!level->CanAttack(position + negative90face, negative90face)) { return false; }
+		swordMiddleRoute.emplace_back(position + negative90face + negative90face); //1-2
+		if (!level->CanAttack(position + negative90face, negative90face)) { return false; }
+		swordFarRoute.emplace_back(position + negative90face + negative90face); //1-3
+
+		if (!level->CanAttack(position, negative45face)) { return false; }
+		swordNearRoute.emplace_back(position + negative45face); //2-1
+		if (!level->CanAttack(position + negative45face, negative45face)) { return false; }
+		swordMiddleRoute.emplace_back(position + negative45face + negative45face); //2-2
+		if (!level->CanAttack(position + negative90face , negative45face)) { return false; }
+		swordFarRoute.emplace_back(position + negative90face + negative45face); //2-3
+
+		if (!level->CanAttack(position, face)) { return false; }
+		swordNearRoute.emplace_back(position + face); //3-1
+		if (!level->CanAttack(position + negative45face, face)) { return false; }
+		swordMiddleRoute.emplace_back(position + negative45face + face); //3-2
+		if (!level->CanAttack(position + negative45face + negative45face, face)) { return false; }
+		swordFarRoute.emplace_back(position + negative45face + negative45face + face); //3-3
+
+		if (!level->CanAttack(position, face)) { return false; }
+		swordNearRoute.emplace_back(position + face); //4-1
+		if (!level->CanAttack(position + face, face)) { return false; }
+		swordMiddleRoute.emplace_back(position + face + face); //4-2
+		if (!level->CanAttack(position + negative45face+ face, face)) { return false; }
+		swordFarRoute.emplace_back(position + negative45face + face + face); //4-3
+
+		if (!level->CanAttack(position, face)) { return false; }
+		swordNearRoute.emplace_back(position + face); //5-1
+		if (!level->CanAttack(position + face, positive45face)) { return false; }
+		swordMiddleRoute.emplace_back(position + face + positive45face); //5-2
+		if (!level->CanAttack(position + face + face, face)) { return false; }
+		swordFarRoute.emplace_back(position + face + face + face); //5-3
+
+		if (!level->CanAttack(position, positive45face)) { return false; }
+		swordNearRoute.emplace_back(position + positive45face); //6-1
+		if (!level->CanAttack(position + positive45face, positive45face)) { return false; }
+		swordMiddleRoute.emplace_back(position + positive45face + positive45face); //6-2
+		if (!level->CanAttack(position + face + face, positive45face)) { return false; }
+		swordFarRoute.emplace_back(position + face + face + positive45face); //6-3
+
+		if (!level->CanAttack(position, positive45face)) { return false; }
+		swordNearRoute.emplace_back(position + positive45face); //7-1
+		if (!level->CanAttack(position + positive45face, positive45face)) { return false; }
+		swordMiddleRoute.emplace_back(position + positive45face + positive45face); //7-2
+		if (!level->CanAttack(position + positive45face, positive45face)) { return false; }
+		swordFarRoute.emplace_back(position + positive45face + positive45face); //7-3		
+	}
+
+	return true;
+}
 void Player::MiniMapSubmit()
 {
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
@@ -190,7 +322,7 @@ void Player::MiniMapSubmit()
 			/ (static_cast<float>(level->GetMap().size()) / 49)),
 			1 + 	static_cast<int>(
 			static_cast<float>(position.y)
-			/ (static_cast<float>(level->GetMap().size()) / 8))
+			/ (static_cast<float>(level->GetMap().size()) / 20))
 		), 
 		Color::White,
 		20,
@@ -270,12 +402,9 @@ void Player::Attack(const int range, const Vector2& face, float deltaTime)
 	if (owner)
 	{
 		Vector2 	swordPath = position;
-		for (int ix = 1; ix <= range && level->CanAttack(swordPath, face); ++ix)
-		{ //CanAttack에 Guard의 경우 Enemy가 앞에 있을 때 아예 공격을 막아버리게 하고 싶긴 해
-			swordPath.x += face.x;
-			swordPath.y += face.y;
-			owner->SpawnActor<Sword>(swordPath);
-		}
+		owner->SpawnActor<Sword>(GetPosition(), GetSwordNearRoute());
+		owner->SpawnActor<Sword>(GetPosition(), GetSwordMiddleRoute());
+		owner->SpawnActor<Sword>(GetPosition(), GetSwordFarRoute());
 	}
 }
 

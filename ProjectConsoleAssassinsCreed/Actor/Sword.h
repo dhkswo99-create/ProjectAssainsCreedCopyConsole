@@ -2,6 +2,7 @@
 
 #include <Actor/ACTOR.H>
 #include <Util/Timer.H>
+#include <vector>
 
 using namespace Craft;
 class Sword : public Actor
@@ -31,7 +32,7 @@ class Sword : public Actor
 	};
 
 public:
-	Sword(const Vector2& position);
+	Sword(const Vector2& position, const std::vector<Vector2>& path);
 	~Sword() = default;
 	virtual void OnCollision(const std::shared_ptr<Actor>& other) override;
 
@@ -39,8 +40,11 @@ private:
 	virtual void Tick(float deltaTime) override;
 
 private:
+	int currentIndex;
+	int effectSequenceCount;
 	// 애니메이션 재생에 사용할 타이머.
 	// 시퀀스 사이에 시간 계산용.
 	Timer timer;
+	std::vector<Vector2> swordPos;
 };
 

@@ -40,7 +40,7 @@ std::vector<Vector2> Bresenham::BresenhamFinder(const float distance, const Vect
     float absRightVector = 1;//(1,0)
 	
     double bresenhamAngle = acos((innerProduct_RightVector > abs(distance) ||
-		innerProduct_RightVector < abs(distance)) ? distance : innerProduct_RightVector / (distance)) * ANGLE;
+		innerProduct_RightVector < -abs(distance)) ? distance : innerProduct_RightVector / (distance)) * ANGLE;
 
 	// 적용할 브레젠함 결정.
 	Vector2 bresenhamFace = CalcAngle(startPosition, destination, bresenhamAngle);

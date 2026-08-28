@@ -6,13 +6,8 @@
 
 using cCoord = std::pair<double, std::pair<int, int>>;
 
-Astar::Astar(
-    std::vector<std::vector<int>> map,
-    const Vector2& startPosition,
-    const Vector2& destination)
-    : map(map),
-    startPosition(startPosition),
-    destination(destination)
+Astar::Astar(std::vector<std::vector<int>> map)
+    : map(map)
 {
     if (this->map.empty())
     {

@@ -10,9 +10,7 @@ struct CRAFT_API  Astar
 {
 public:
 	Astar(
-		std::vector<std::vector<int>> map,
-		const Vector2& startPosition,
-		const Vector2& destination
+		std::vector<std::vector<int>> map
 	);
 	~Astar() = default;
 

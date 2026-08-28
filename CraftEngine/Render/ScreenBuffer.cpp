@@ -19,14 +19,15 @@ namespace Craft
 
 		//값 확인
 		assert(buffer != INVALID_HANDLE_VALUE);// -1 포인터
+		
 
 		//화면 창 크기 설정
 		SMALL_RECT rect = {};
 		rect.Top = 0;
 		rect.Left = 0;
-
 		rect.Right = static_cast<short> (size.x - 1);
 		rect.Bottom = static_cast<short> (size.y -1);
+
 		//화면 버퍼 크기 설정
 		BOOL result = SetConsoleScreenBufferSize(buffer, size);
 		assert(result == TRUE);
@@ -101,4 +102,5 @@ namespace Craft
 		);
 		assert(result == TRUE);
 	}
+
 }

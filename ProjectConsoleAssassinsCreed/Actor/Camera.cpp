@@ -23,23 +23,39 @@ void Camera::Move(float deltaTime)
 	
 	Vector2 currentPosition = cameraView;
 	if (dx >= 1)
-	{
+	{		
+		if (dx >= 2)
+		{
+			++currentPosition.x;
+		}		
 		++currentPosition.x;
 		dx = 0;
 	}
 	if (dx <= -1)
 	{
+		if (dx <= -2)
+		{
+			--currentPosition.x;
+		}		
 		--currentPosition.x;
 		dx = 0;
 	}
 
 	if (dy >= 1)
 	{
+		if (dy >= 2)
+		{
+			++currentPosition.x;
+		}		
 		++currentPosition.y;
 		dy = 0;
 	}
 	if (dy <= -1)
 	{
+		if (dy <= -2)
+		{
+			--currentPosition.x;
+		}		
 		--currentPosition.y;
 		dy = 0;
 	
@@ -56,8 +72,8 @@ void Camera::Tick(float deltaTime)
 	cameraTargetView = level->GetPlayerPosition();
 	playerFace = level->GetPlayerFace();  //TODO
 	// 기본 카메라 조정
-	cameraTargetView.x -= 40;
-	cameraTargetView.y -= 15;
+	cameraTargetView.x -= 35;
+	cameraTargetView.y -= 22;
 
 	// 플레이어가 바라보는 방향에 맞추어 시야 조정
 	int faceCheck = playerFace.x * 3 + playerFace.y;
