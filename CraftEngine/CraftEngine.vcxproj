@@ -106,6 +106,7 @@ xcopy ..\Config\* $(OutDir)..\Config\ /e /y /i</Command>
   <ItemGroup>
     <ClCompile Include="Actor\Actor.cpp" />
     <ClCompile Include="Engine\Engine.cpp" />
+    <ClCompile Include="Util\Heap.cpp" />
     <ClCompile Include="Input\Input.cpp" />
     <ClCompile Include="Level\Level.cpp" />
     <ClCompile Include="Math\Vector2.cpp" />
@@ -130,6 +131,7 @@ xcopy ..\Config\* $(OutDir)..\Config\ /e /y /i</Command>
     <ClInclude Include="Render\ScreenBuffer.h" />
     <ClInclude Include="Util\Astar.h" />
     <ClInclude Include="Util\Bresenham.h" />
+    <ClInclude Include="Util\Heap.h" />
     <ClInclude Include="Util\Util.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -21,7 +21,7 @@ public:
 	);
 	bool CanAttack(
 		const Craft::Vector2& playerPosition,
-		const Craft::Vector2& face
+		const Craft::Vector2& dPos
 	);
 
 	void IsSighted();
@@ -36,7 +36,7 @@ public:
 
 	Craft::Vector2 GetPlayerPosition() const { return player->GetPosition(); }
 	Craft::Vector2 GetPlayerFace() const { return player->GetFace(); }
-	std::vector<std::vector<int>>& GetMap() { return map; }
+	std::vector<std::vector<int>> GetMap() { return map; }
 	std::vector<std::vector<int>> GetClearMap() { return clearMap; }
 
 	//아이템 충돌 이벤트 Press F 출력

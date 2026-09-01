@@ -46,6 +46,10 @@ namespace Craft
 	{
 		return Vector2(x * other.x, y * other.y);
 	}
+	Vector2 Vector2::operator*(const int multuplier) const
+	{
+		return Vector2(x * multuplier, y * multuplier);
+	}
 	Vector2 Vector2::operator/(const Vector2& other) const
 	{
 		assert(other.x != 0 && other.y != 0);

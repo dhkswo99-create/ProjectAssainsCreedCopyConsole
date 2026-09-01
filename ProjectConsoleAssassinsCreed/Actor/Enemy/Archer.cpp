@@ -110,7 +110,8 @@ void Archer::Tick(float deltaTime)
 void Archer::Attack(int range, const Vector2& face, float deltaTime)
 {
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
-	Bresenham bresenham(level->GetMap());
+	std::vector<std::vector<int>> map = level->GetMap();
+ 	Bresenham bresenham(map);
 	std::shared_ptr<Level> owner = GetOwner();
 	Vector2 pPo = level->GetPlayerPosition();
 	std::vector<Vector2> arrowPath = bresenham.BresenhamFinder(distance, GetPosition(), pPo);

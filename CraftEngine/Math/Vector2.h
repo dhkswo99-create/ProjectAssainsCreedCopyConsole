@@ -21,6 +21,7 @@ namespace Craft
 		Vector2 operator+(const Vector2& other) const;
 		Vector2 operator-(const Vector2& other) const;
 		Vector2 operator*(const Vector2& other) const;
+		Vector2 operator*(const int multuplier) const;
 		Vector2 operator/(const Vector2& other) const;
 
 		//대입연산자 오버로딩

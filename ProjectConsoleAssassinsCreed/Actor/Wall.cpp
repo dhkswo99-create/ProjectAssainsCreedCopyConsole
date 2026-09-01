@@ -7,4 +7,5 @@ Wall::Wall(const Vector2& position)
 {
 	//그리기 우선순위 지정
 	sortingOrder = 0;
+	SetIsSighted(false);
 }

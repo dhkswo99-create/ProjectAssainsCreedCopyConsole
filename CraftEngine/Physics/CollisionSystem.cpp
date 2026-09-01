@@ -90,43 +90,13 @@ namespace Craft
 		const Vector2 rightCurrent = right->GetPosition();
 		const Vector2 rightPrevious = right->GetPreviousPosition();
 
-		// 이전 프레임 위치와 현재 위치를 모두 포함하는 swept bounds 계산.
-		const int leftXMin = (leftCurrent.x < leftPrevious.x) ? leftCurrent.x : leftPrevious.x;
-		const int leftXMax = (leftCurrent.x > leftPrevious.x) ? leftCurrent.x : leftPrevious.x;
-
-		const int rightXMin = (rightCurrent.x < rightPrevious.x) ? rightCurrent.x : rightPrevious.x;
-		const int rightXMax = (rightCurrent.x > rightPrevious.x) ? rightCurrent.x : rightPrevious.x;
-
-		// X좌표 기준으로 충돌이 발생할 수 없는 상황 처리.
-		if (rightXMin > leftXMax)
+		//충돌 발생
+		if (leftCurrent == rightCurrent || rightPrevious == leftCurrent
+			|| leftPrevious == rightCurrent || rightPrevious == leftPrevious)
 		{
-			return false;
+			return true;
 		}
-
-		if (rightXMax < leftXMin)
-		{
-			return false;
-		}
-
-		// 이전 프레임까지 고려한 y 충돌 영역 계산.
-		const int leftYMin = (leftCurrent.y < leftPrevious.y) ? leftCurrent.y : leftPrevious.y;
-		const int leftYMax = (leftCurrent.y > leftPrevious.y) ? leftCurrent.y : leftPrevious.y;
-
-		const int rightYMin = (rightCurrent.y < rightPrevious.y) ? rightCurrent.y : rightPrevious.y;
-		const int rightYMax = (rightCurrent.y > rightPrevious.y) ? rightCurrent.y : rightPrevious.y;
-
-		// y좌표 기준으로 충돌이 발생할 수 없는 상황 처리.
-		if (rightYMin > leftYMax)
-		{
-			return false;
-		}
-
-		if (rightYMax < leftYMin)
-		{
-			return false;
-		}
-
-		// 충돌 발생.
-		return true;
+		//충돌 미발생
+		return false;
 	}
 }

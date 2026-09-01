@@ -14,9 +14,10 @@ Camera::Camera()
 
 void Camera::Move(float deltaTime)
 {
-	SetMoveSpeed(
+	//std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+	SetMoveSpeed(static_cast<float>(
 		(cameraTargetView - cameraView) == Vector2::Zero ? 0 : 1
-	);
+	));
 	
 	dx += (cameraTargetView.x - cameraView.x) * 5 * deltaTime * moveSpeed;
 	dy += (cameraTargetView.y - cameraView.y) * 5 * deltaTime * moveSpeed;
@@ -27,6 +28,8 @@ void Camera::Move(float deltaTime)
 		if (dx >= 2)
 		{
 			++currentPosition.x;
+			++currentPosition.x;
+			++currentPosition.x;
 		}		
 		++currentPosition.x;
 		dx = 0;
@@ -35,6 +38,8 @@ void Camera::Move(float deltaTime)
 	{
 		if (dx <= -2)
 		{
+			--currentPosition.x;
+			--currentPosition.x;
 			--currentPosition.x;
 		}		
 		--currentPosition.x;
@@ -46,6 +51,8 @@ void Camera::Move(float deltaTime)
 		if (dy >= 2)
 		{
 			++currentPosition.x;
+			++currentPosition.x;
+			++currentPosition.x;
 		}		
 		++currentPosition.y;
 		dy = 0;
@@ -54,6 +61,8 @@ void Camera::Move(float deltaTime)
 	{
 		if (dy <= -2)
 		{
+			--currentPosition.x;
+			--currentPosition.x;
 			--currentPosition.x;
 		}		
 		--currentPosition.y;

@@ -1,10 +1,12 @@
 ﻿#pragma once
 
 #include <Actor/Actor.h>
+#include <Actor/Sword.h>
 #include <Util/Timer.h>
 #include <vector>
 
-class Player : public Craft::Actor
+class Player : public Craft::Actor,
+	public std::enable_shared_from_this<Actor>
 {
 	TYPE_DECLARATIONS(Player, Actor)
 public:
@@ -18,7 +20,7 @@ public:
 	void Move(float directionX, float directionY, float deltaTime);
 	
 	//공격함수
-	void Attack(const int range, const Craft::Vector2& face, float deltaTime);
+	void Attack(const Craft::Vector2& face, float deltaTime);
 
 	void SetRange(int newRange) { range = newRange; }
 	
@@ -31,9 +33,9 @@ private:
 	// 검 궤적 계산 
 	Craft::Vector2 CalMatrix(const Craft::Vector2& face, int matrix0, int matrix1, int matrix2, int matrix3);
 	bool CalcSwordRoute(const Craft::Vector2& face, const Craft::Vector2& position);
-	std::vector<Craft::Vector2> GetSwordNearRoute() { return swordNearRoute; }
-	std::vector<Craft::Vector2> GetSwordMiddleRoute() { return swordMiddleRoute; }
-	std::vector<Craft::Vector2> GetSwordFarRoute() { return swordFarRoute; }
+	bool CalcSecondSwordRoute(const Craft::Vector2& face, const Craft::Vector2& position);
+	std::vector<Craft::Vector2> GetSwordRoute(const int routeIndex) 
+	{ return swordRoute[routeIndex]; }
 
 
 private:
@@ -42,17 +44,17 @@ private:
 	int positive45Degree[4] = {1, -1, 1, 1};
 	int negative45Degree[4] = {1, 1, -1, 1};
 	int negative90Degree[4] = {0, 1, -1, 0};
-	std::vector<Craft::Vector2> swordNearRoute;
-	std::vector<Craft::Vector2> swordMiddleRoute;
-	std::vector<Craft::Vector2> swordFarRoute;
+	std::vector<std::vector<Craft::Vector2>> swordRoute;
+	std::vector<std::shared_ptr<Sword>> swordSet;
 
 	// 공격 요청 변수
 	bool doAttack = false;
+	bool bDoSecondAttack = false;
 	bool doneAttack = true;
 
 	// 딜레이 변수 // 디폴트 0.2 
 	float castDelay = 0.2f;
-	float attackDelay = 0.2f;
+	float attackDelay = 0.3f;
 
 	//버프 시간
 	float buffDuration = 0.3f;

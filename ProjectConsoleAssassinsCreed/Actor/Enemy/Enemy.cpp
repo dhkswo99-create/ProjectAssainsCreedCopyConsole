@@ -26,12 +26,17 @@ void Enemy::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
-	found = Searching();
 
+
+	found = Searching(); // << 얘가 병목 성능이 100 프레임에서 50프로임 아래로 떨어트림
+
+	//생각보다 성능에 영향 안큼
 	if (!found && moveIndex <= 0)
-	{ // 무작위 패트롤
+	{
+		// 무작위 패트롤
 		std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
-		Astar patrolFinder(map = level->GetMap());
+		std::vector<std::vector<int>> map = level->GetMap();
+		AStar patrolFinder;
 		int ran = rand();
 		int ran_1 = ran % 41;
 		int ran_2 = ran % 79;
@@ -52,14 +57,15 @@ void Enemy::Tick(float deltaTime)
 		{
 			posY = -posY;
 		}
-		pathDirection = patrolFinder.AstarFinder(map,
-			position,
-			Vector2(posX, posY));
+		patrolFinder.FindPath(GetPosition(), Vector2(posX, posY), map, pathDirection);
+			
 		if (pathDirection.size() > 1)
 		{
-			moveIndex = pathDirection.size() - 1;
+			moveIndex = static_cast<int>(pathDirection.size()) - 1;
 		}
 	}
+
+	
 
 
 	// Enemy 방향에 맞게 조정
@@ -111,11 +117,31 @@ std::vector<Vector2> Enemy::FindRoute(const Vector2& destination)
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	map = level->GetMap();
 	Vector2 Start = GetPosition();
-	Astar routeFinder(map);
-	std::vector<Vector2> moveStack = routeFinder.AstarFinder(map, Start, destination);
+	AStar routeFinder;
+	 //if (routeFinder.AstarFinder(map, Start, destination, moveStack) {}
+	std::vector<Vector2> moveStack;
+	routeFinder.FindPath(Start, destination, map, moveStack);
 	if (level->GetDebuger())
 	{
 		Vector2 currentPos = Start;
+		std::reverse(moveStack.begin(), moveStack.end());
+		for (int ix = 0; ix < map[0].size(); ++ix)
+		{
+			for (int jx = 0; jx < map.size(); ++jx)
+			{
+				if (map[jx][ix] 
+					== static_cast<int>(AStar::TileType::Visited))
+				{
+					Renderer::Get().Submit(
+						L"⅓",
+						Vector2(ix, jx),
+						Color::Red, 
+						1,
+						true
+					);
+				}
+			}
+		}
 		for (Vector2 path : moveStack)
 		{
 			Renderer::Get().Submit(
@@ -171,18 +197,19 @@ bool Enemy::Searching()
 	//GameLevel 객체 생성
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	//Bresenham 알고리즘 사용을 위해 객체 생성
-	Bresenham bresenham(level->GetMap());
 	Vector2 playerPos = level->GetPlayerPosition();
 	Vector2 myPos = GetPosition();
-	distance =
+	distance =static_cast<float>(
 		(playerPos.x - myPos.x)
 		* (playerPos.x - myPos.x)
 		+ (playerPos.y - myPos.y)
-		* (playerPos.y - myPos.y);
+		* (playerPos.y - myPos.y));
 	if (distance > sightRange * sightRange) // 단순 비교
 	{ // 적군이 많아질수록 성능에 유리
 		return false;
 	}
+	std::vector<std::vector<int>> map = level->GetMap();
+	Bresenham bresenham(map);
 	Vector2 myFace = GetFace();
 	float innerProduct = static_cast<float>(
 		(playerPos.x - myPos.x)* myFace.x + (playerPos.y - myPos.y)* myFace.y

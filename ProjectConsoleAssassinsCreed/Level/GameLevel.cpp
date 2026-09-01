@@ -63,7 +63,7 @@ bool GameLevel::CanMove(const Craft::Vector2& nextPosition)
 	return false; // 예상치 못한 처리 - 이동 불가
 }
 
-bool GameLevel::CanAttack(const Craft::Vector2& playerPosition, const Craft::Vector2& face)
+bool GameLevel::CanAttack(const Craft::Vector2& playerPosition, const Craft::Vector2& dPos)
 {
 	if (isGameOver
 		|| targetClear
@@ -74,7 +74,7 @@ bool GameLevel::CanAttack(const Craft::Vector2& playerPosition, const Craft::Vec
 	}
 
 	//공격하려는 곳이 벽인 경우
-	if (map[playerPosition.y + face.y][playerPosition.x + face.x])
+	if (map[playerPosition.y + dPos.y][playerPosition.x + dPos.x])
 	{
 		return false;
 	}
@@ -88,16 +88,15 @@ bool GameLevel::CanAttack(const Craft::Vector2& playerPosition, const Craft::Vec
 void GameLevel::IsSighted()
 {
 	for (const std::shared_ptr<Actor>& actor : actorList)
-	{	
+	{
 		actor->SetIsSighted(
-			(GetDebuger()) ? 
-			true :
-			SearchingActorGL(actor)); //실제 게임
+			(GetDebuger()) ?
+			true : SearchingActorGL(actor));
 		//actor->SetIsSighted(true); //디버깅
-		if (	!actor->IsTypeOf<Enemy>()
+		if (!actor->IsTypeOf<Enemy>()
 			//&& !actor->IsTypeOf<Ground>()
-			&&  actor->GetIsSighted() 
-			&& !actor->GetKeepSighted() 
+			&& actor->GetIsSighted()
+			&& !actor->GetKeepSighted()
 			)
 		{
 			actor->SetKeepSighted(true);
@@ -718,12 +717,12 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 		}
 		return true;
 	}
-	
-	float distance = // 거리로 조건문 처리할 때는 제곱 형태로 두고 계산하여 성능 향상 
+	// 거리로 조건문 처리할 때는 제곱 형태로 두고 계산하여 성능 향상 
+	float distance = static_cast<float>(
 		(playerPos.x - actorPos.x)
 		* (playerPos.x - actorPos.x)
 		+ (playerPos.y - actorPos.y)
-		* (playerPos.y - actorPos.y);
+		* (playerPos.y - actorPos.y));
 	if (distance < 4 * 4 && 1 <= distance) 
 	{
 		return true;

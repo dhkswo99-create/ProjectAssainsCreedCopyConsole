@@ -32,7 +32,8 @@ class Sword : public Actor
 	};
 
 public:
-	Sword(const Vector2& position, const std::vector<Vector2>& path);
+	Sword(const Vector2& position, const std::vector<Vector2>& path,
+		const std::weak_ptr<Actor>& handler);
 	~Sword() = default;
 	virtual void OnCollision(const std::shared_ptr<Actor>& other) override;
 
@@ -46,5 +47,7 @@ private:
 	// 시퀀스 사이에 시간 계산용.
 	Timer timer;
 	std::vector<Vector2> swordPos;
+
+	std::weak_ptr<Actor> handler;
 };
 
