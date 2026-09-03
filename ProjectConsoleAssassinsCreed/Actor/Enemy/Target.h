@@ -14,14 +14,16 @@ public:
 	Target(const Vector2& position);
 	~Target();
 
+	void DisplayHp();
 	void MiniMapSubmit();
 
 
 
-
+	virtual void DestroyWeapon() override;
 	virtual void BeAttacked(const Vector2& face, int damage) override;
 	void Tick(float deltaTime) override;
 	bool GetIsDead() { return isDead; }
+	
 
 private:
 	// 회전 행렬 계산
@@ -29,7 +31,7 @@ private:
 		int matrix0, int matrix1, int matrix2, int matrix3);
 
 	// 주어진 패턴대로 공격
-	void Attack(int range, std::vector<int>& damage);
+	void Attack(std::vector<int>& damage);
 
 	// 첫 패턴 빠르게 다가가 전진 공격
 	void CalcFarAttackPattern();
@@ -45,16 +47,9 @@ private:
 
 	// swordRoute에 들어갈 위치 검증 후 삽입
 	bool InsertSwordRoute(std::shared_ptr<GameLevel>& level,
-		std::vector<Vector2>& swordRoute, Vector2& vector);
+		std::vector<Vector2>& swordRoute, const Vector2& vector);
 
 private:
-	// 회전 방향
-	Vector2 positive90face;
-	Vector2 positive45face;
-	Vector2 negative45face;
-	Vector2 negative90face;
-
-
 	//보스 데미지 패턴 별로 추가 연산 진행 후 대입
 	int damage = 20;
 
@@ -83,6 +78,8 @@ private:
 	bool nearSecondPattern = false; // 가까울 때 연속 공격
 	bool supprsstionPattern = false; // 밀어내는 공격
 
+	// 연속 공격 변수
+	bool bDoSecondAttack = false;
 
 	// 패턴 생성을 위한 검 변수
 	int positive90Degree[4] = { 0, -1, 1, 0 };

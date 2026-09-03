@@ -417,6 +417,17 @@ void GameLevel::Tick(float deltaTime)
 		debugerTrigger = 1 - debugerTrigger;
 		SetDebuger( (debugerTrigger == 1) ? true : false );
 	}
+	// 디버그 모드 ON OFF 확인 
+	Renderer::Get().ScreenSubmit(L"Debug(F2)", Vector2(33, 47),
+		( (bDebuger) ? Color::White : Color::Gray),
+		21, true
+	);
+	// 클린 사이트 
+	Renderer::Get().ScreenSubmit(L"CleanSight(F3)", Vector2(33, 46),
+		( (bCleanSight) ? Color::White : Color::Gray),
+		21, true
+	);
+	
 	if (Input::Get().GetKeyDown(VK_F3))
 	{ 
 		cleanSightTrigger = 1 - cleanSightTrigger;
@@ -790,9 +801,27 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 			rayDirectionQueue.pop_back(); // 경로가 해당 액터까지의 경로 저장이므로 마지막 경로 제외
 		}
 		bool isWall = false;
+		int wallCount = 0;
 		for (Vector2 path : rayDirectionQueue)
 		{
-			isWall = IsWall(path);
+			if (wallCount >= 1)
+			{
+				if (!IsWall(path))
+				{
+					isWall = true;
+					break;
+				}
+			}
+			if (IsWall(path))
+			{
+				if (!actor->IsTypeOf<Wall>())
+				{
+					isWall = true;
+					break;
+				}
+				++wallCount;
+			}
+
 			if (bDebuger)
 			{
 				Renderer::Get().Submit(
@@ -802,10 +831,6 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 					1,
 					true
 				);
-			}
-			if (isWall)
-			{
-				break;
 			}
 		}
 		if (!isWall)

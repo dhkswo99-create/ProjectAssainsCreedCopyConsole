@@ -8,13 +8,17 @@ using namespace Craft;
 using SwordFrame = Sword::SwordFrame;
 
 static const SwordFrame sword =
-		{L"◈", 0.025f, Color::Red }; // 총소요 0.17초 7틱.
+		{L"◈", 0.025f, Color::Red }; // 총소요 0.175초 7틱.
 
 Sword::Sword(const Vector2& position, const std::vector<Vector2>& path,
 				const std::weak_ptr<Actor>& handler, int damage)
 	: super(sword.frame , Vector2::Zero, sword.color), handler(handler), damage(damage)
 {
 	hp = 25;
+	if (path.size() == 0)
+	{
+		return;
+	}
 	swordPos = path;
 	isSighted = true;
 	sortingOrder = 21;

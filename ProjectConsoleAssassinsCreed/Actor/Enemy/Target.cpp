@@ -14,21 +14,12 @@ Target::Target(const Vector2& position)
 	sightRange = 15;
 	range = 10;
 	moveSpeed = 20.f;
-	patternDelay.SetTargetTime(0.5f);
+	patternDelay.SetTargetTime(1.0f);
 	invincibilityTimer.SetTargetTime(0.2f);
 	for (int ix = 0; ix < range; ++ix)
 	{
 		swordRoute.emplace_back();
 	}
-	// 회전 방향 미리 계산
-	negative90face = CalMatrix(face, negative90Degree[0], negative90Degree[1],
-		negative90Degree[2], negative90Degree[3]);
-	negative45face = CalMatrix(face, negative45Degree[0], negative45Degree[1],
-		negative45Degree[2], negative45Degree[3]);
-	positive45face = CalMatrix(face, positive45Degree[0], positive45Degree[1],
-		positive45Degree[2], positive45Degree[3]);
-	positive90face = CalMatrix(face, positive90Degree[0], positive90Degree[1],
-		positive90Degree[2], positive90Degree[3]);
 	// 충돌 가능 객체
 	SetColiisionEnabled(true);
 }
@@ -36,6 +27,12 @@ Target::Target(const Vector2& position)
 Target::~Target()
 {
 	isDead = true;
+}
+
+void Target::DestroyWeapon()
+{
+	swordSet.clear();
+	doAttack = false;
 }
 
 void Target::BeAttacked(const Vector2& face, int damage)
@@ -74,6 +71,27 @@ void Target::BeAttacked(const Vector2& face, int damage)
 	invincibilityTimer.Reset();
 }
 
+void Target::DisplayHp()
+{
+	Renderer::Get().ScreenSubmit( //플레이어 미니맵 처리
+		L"Target HP: ",
+		Vector2(1, 29), // offset 0, 1 -> 세부 조정
+		Color::White,
+		21,
+		true
+	);
+	for (int ix = 0; ix < hp / 25; ++ix)
+	{
+		Renderer::Get().ScreenSubmit( //플레이어 미니맵 처리
+			L"■",
+			Vector2(12 + ix, 29), // offset 0, 1 -> 세부 조정
+			Color::White,
+			21,
+			true
+		);
+	}
+}
+
 void Target::MiniMapSubmit()
 {
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
@@ -98,7 +116,7 @@ void Target::Tick(float deltaTime)
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 
 	invincibilityTimer.Tick(deltaTime);
-	if (found || !beBoss)
+	if (found && !beBoss)
 	{
 		bossTimer.Tick(deltaTime);
 		beBoss = true;
@@ -113,9 +131,9 @@ void Target::Tick(float deltaTime)
 		pathDirection = FindRoute(level->GetPlayerPosition());
 	}
 	MiniMapSubmit();
-
 	if (beBoss)
 	{
+		DisplayHp();
 		patternDelay.Tick(deltaTime);
 		if (!patternDelay.IsTimeOut())
 		{
@@ -123,7 +141,7 @@ void Target::Tick(float deltaTime)
 		}
 		SetMoveSpeed(10.f);
 		std::vector<int> patternDamage;
-		int patternRange = 1;
+		int patternRange = 10;
 		
 
 		// 모든 패턴 및 공격이 진행 중이지 않을 때
@@ -147,19 +165,25 @@ void Target::Tick(float deltaTime)
 				{
 					nearFirstPattern = true;
 				}
-				// 40% 두번째
-				else if (randomNum > 1)
-				{
-					nearSecondPattern = true;
-				}
-				// 20% 밀어내기
-				else
-				{
-					supprsstionPattern = true;
-				}
+			//	// 40% 두번째
+			//	else if (randomNum > 1)
+			//	{
+			//		nearSecondPattern = true;
+			//	}
+			//	// 20% 밀어내기
+			//	else
+			//	{
+			//		supprsstionPattern = true;
+			//	}
 			}
 		}
-				
+		if (patternDamage.size() == 0)
+		{
+			for (int ix = 0; ix < range; ++ix)
+			{
+				patternDamage.emplace_back(10);
+			}
+		}
 		//  멀면 추적해서 따라가서 전진 공격
 		if (farPattern && !doAttack)
 		{
@@ -187,10 +211,25 @@ void Target::Tick(float deltaTime)
 			}
 			if (distance <= 2)
 			{
-				CalcNearFirstPattern();
-				patternDelay.Reset();
-				nearFirstPattern = false;
-				doAttack = true;
+				if (!bDoSecondAttack)
+				{
+					for (int ix = 1; ix <= 4; ++ix)
+					{
+						if (!InsertSwordRoute(level, swordRoute[ix], face * (ix % 3))) return;
+					}
+					patternDelay.Reset();
+					doAttack = true;
+					bDoSecondAttack = true;
+
+				}
+				else
+				{
+					CalcNearFirstPattern();
+					patternDelay.Reset();
+					nearFirstPattern = false;
+					bDoSecondAttack = false;
+					doAttack = true;
+				}
 			}
 		}
 
@@ -215,7 +254,7 @@ void Target::Tick(float deltaTime)
 		if (doAttack)
 		{
 			patternDelay.Reset();
-			Attack(patternRange, patternDamage);
+			Attack(patternDamage);
 			doAttack = false;
 		}
 
@@ -225,18 +264,14 @@ void Target::Tick(float deltaTime)
 	}
 }
 
-void Target::Attack(int range, std::vector<int>& damage)
+void Target::Attack(std::vector<int>& damage)
 {
-	if (range != damage.size())
-	{
-		return;
-	}
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	std::shared_ptr<Level> owner = GetOwner();
 	Vector2 currentPos = GetPosition();
 	if (owner)
 	{
-		for (int ix = 0; ix < range; ++ix)
+		for (int ix = 0; ix < 4; ++ix)
 		{
 			swordSet.emplace_back(
 				owner->SpawnActor<Sword>(GetPosition(), swordRoute[ix], weak_from_this(), damage[ix])
@@ -256,16 +291,145 @@ Vector2 Target::CalMatrix(const Vector2& face, int matrix0, int matrix1, int mat
 		: Vector2(face.x * matrix0 + face.y * matrix2,
 			face.x * matrix1 + face.y * matrix3));
 }
-
+// 작업 완료
 void Target::CalcFarAttackPattern()
 {
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 
-	if (!InsertSwordRoute(level, swordRoute[0], Vector2::Zero)) return;
+	Vector2 negative90face = CalMatrix(face, negative90Degree[0], negative90Degree[1],
+		negative90Degree[2], negative90Degree[3]);
+	Vector2 negative45face = CalMatrix(face, negative45Degree[0], negative45Degree[1],
+		negative45Degree[2], negative45Degree[3]);
+	Vector2 positive45face = CalMatrix(face, positive45Degree[0], positive45Degree[1],
+		positive45Degree[2], positive45Degree[3]);
+	Vector2 positive90face = CalMatrix(face, positive90Degree[0], positive90Degree[1],
+		positive90Degree[2], positive90Degree[3]);
+	if (face.x == 0 || face.y == 0)
+	{
+		// First
+		if (!InsertSwordRoute(level, swordRoute[0], positive45face * -1 + negative90face)) return;
+		if (!InsertSwordRoute(level, swordRoute[1], positive45face * -2 + negative90face)) return;
+		if (!InsertSwordRoute(level, swordRoute[2], positive45face * -2 + negative90face)) return;
+		if (!InsertSwordRoute(level, swordRoute[3], positive45face * -2 + negative90face)) return;
+		// Second
+		if (!InsertSwordRoute(level, swordRoute[0], negative90face)) return;
+		if (!InsertSwordRoute(level, swordRoute[1], negative90face * 2)) return;
+		if (!InsertSwordRoute(level, swordRoute[2], positive45face * -1 + negative90face * 2)) return;
+		if (!InsertSwordRoute(level, swordRoute[3], positive45face * -1 + negative90face * 2)) return;
+		// Third
+		if (!InsertSwordRoute(level, swordRoute[0], negative45face)) return;
+		if (!InsertSwordRoute(level, swordRoute[1], negative45face + negative90face)) return;
+		if (!InsertSwordRoute(level, swordRoute[2], negative45face + negative90face * 2)) return;
+		if (!InsertSwordRoute(level, swordRoute[3], negative90face * 4)) return;
+		// Fourth
+		if (!InsertSwordRoute(level, swordRoute[0], face)) return;
+		if (!InsertSwordRoute(level, swordRoute[1], face + negative45face)) return;
+		if (!InsertSwordRoute(level, swordRoute[2], face + negative45face * 2)) return;
+		if (!InsertSwordRoute(level, swordRoute[3], face + negative45face * 2 + negative90face)) return;
+		// Fifth
+		if (!InsertSwordRoute(level, swordRoute[0], positive45face)) return;
+		if (!InsertSwordRoute(level, swordRoute[1], face * 2)) return;
+		if (!InsertSwordRoute(level, swordRoute[2], face * 2 + negative45face)) return;
+		if (!InsertSwordRoute(level, swordRoute[3], face * 2 + negative45face * 2)) return;
+		// Sixth
+		if (!InsertSwordRoute(level, swordRoute[0], positive45face)) return;
+		if (!InsertSwordRoute(level, swordRoute[1], positive45face + face)) return;
+		if (!InsertSwordRoute(level, swordRoute[2], face * 3)) return;
+		if (!InsertSwordRoute(level, swordRoute[3], face * 3 + negative45face)) return;
+		// Seventh
+		if (!InsertSwordRoute(level, swordRoute[0], positive90face + positive45face)) return;
+		if (!InsertSwordRoute(level, swordRoute[1], positive45face * 2)) return;
+		if (!InsertSwordRoute(level, swordRoute[2], positive45face * 2 + face)) return;
+		if (!InsertSwordRoute(level, swordRoute[3], positive45face * 1 + face * 3)) return;
+	}
+	else
+	{
+		// First
+		if (!InsertSwordRoute(level, swordRoute[0], negative90face * 2)) return;
+		if (!InsertSwordRoute(level, swordRoute[1], positive45face * -1 + negative90face * 2)) return;
+		if (!InsertSwordRoute(level, swordRoute[2], positive45face * -1 + negative90face * 2)) return;
+		if (!InsertSwordRoute(level, swordRoute[3], positive45face * -1 + negative90face * 2)) return;
+		// Second
+		if (!InsertSwordRoute(level, swordRoute[0], negative45face)) return;
+		if (!InsertSwordRoute(level, swordRoute[1], negative45face * 2)) return;
+		if (!InsertSwordRoute(level, swordRoute[2], negative45face * 2 + negative90face)) return;
+		if (!InsertSwordRoute(level, swordRoute[3], negative45face * 2 + negative90face * 2)) return;
+		// Third
+		if (!InsertSwordRoute(level, swordRoute[0], negative45face)) return;
+		if (!InsertSwordRoute(level, swordRoute[1], negative45face + face)) return;
+		if (!InsertSwordRoute(level, swordRoute[2], negative45face * 2 + face)) return;
+		if (!InsertSwordRoute(level, swordRoute[3], negative45face * 4)) return;
+		// Fourth
+		if (!InsertSwordRoute(level, swordRoute[0], face)) return;
+		if (!InsertSwordRoute(level, swordRoute[1], face * 2)) return;
+		if (!InsertSwordRoute(level, swordRoute[2], face * 2 + negative45face)) return;
+		if (!InsertSwordRoute(level, swordRoute[3], face * 2 + negative45face * 2)) return;
+		// Fifth
+		if (!InsertSwordRoute(level, swordRoute[0], face)) return;
+		if (!InsertSwordRoute(level, swordRoute[1], face * 2)) return;
+		if (!InsertSwordRoute(level, swordRoute[2], face * 3)) return;
+		if (!InsertSwordRoute(level, swordRoute[3], face * 4)) return;
+		// Sixth
+		if (!InsertSwordRoute(level, swordRoute[0], positive45face)) return;
+		if (!InsertSwordRoute(level, swordRoute[1], positive45face + face)) return;
+		if (!InsertSwordRoute(level, swordRoute[2], positive45face + face * 2)) return;
+		if (!InsertSwordRoute(level, swordRoute[3], positive45face + face * 3)) return;
+		// Seventh
+		if (!InsertSwordRoute(level, swordRoute[0], positive45face)) return;
+		if (!InsertSwordRoute(level, swordRoute[1], positive45face * 2)) return;
+		if (!InsertSwordRoute(level, swordRoute[2], positive45face * 3)) return;
+		if (!InsertSwordRoute(level, swordRoute[3], positive45face * 3 + face)) return;
+	}
 }
 
 void Target::CalcNearFirstPattern()
 {
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+
+	Vector2 negative90face = CalMatrix(face, negative90Degree[0], negative90Degree[1],
+		negative90Degree[2], negative90Degree[3]);
+	Vector2 negative45face = CalMatrix(face, negative45Degree[0], negative45Degree[1],
+		negative45Degree[2], negative45Degree[3]);
+	Vector2 positive45face = CalMatrix(face, positive45Degree[0], positive45Degree[1],
+		positive45Degree[2], positive45Degree[3]);
+	Vector2 positive90face = CalMatrix(face, positive90Degree[0], positive90Degree[1],
+		positive90Degree[2], positive90Degree[3]);
+	if (face.x == 0 || face.y == 0)
+	{
+		// First
+		if (!InsertSwordRoute(level, swordRoute[0], negative45face)) return;
+		if (!InsertSwordRoute(level, swordRoute[1], negative45face + face)) return;
+		if (!InsertSwordRoute(level, swordRoute[2], negative45face + face * 2)) return;
+		if (!InsertSwordRoute(level, swordRoute[3], negative45face + face * 3)) return;
+		// Second
+		if (!InsertSwordRoute(level, swordRoute[0], face)) return;
+		if (!InsertSwordRoute(level, swordRoute[1], face * 2)) return;
+		if (!InsertSwordRoute(level, swordRoute[2], face * 3)) return;
+		if (!InsertSwordRoute(level, swordRoute[3], face * 4)) return;
+		// Third
+		if (!InsertSwordRoute(level, swordRoute[0], positive45face)) return;
+		if (!InsertSwordRoute(level, swordRoute[1], positive45face + face)) return;
+		if (!InsertSwordRoute(level, swordRoute[2], positive45face + face * 2)) return;
+		if (!InsertSwordRoute(level, swordRoute[3], positive45face + face * 3)) return;
+	}
+	else
+	{
+			// First
+			if (!InsertSwordRoute(level, swordRoute[0], negative90face)) return;
+			if (!InsertSwordRoute(level, swordRoute[1], negative90face + face)) return;
+			if (!InsertSwordRoute(level, swordRoute[2], negative45face + face * 2)) return;
+			if (!InsertSwordRoute(level, swordRoute[3], negative45face + face * 3)) return;
+			// Second
+			if (!InsertSwordRoute(level, swordRoute[0], face)) return;
+			if (!InsertSwordRoute(level, swordRoute[1], face * 2)) return;
+			if (!InsertSwordRoute(level, swordRoute[2], face * 3)) return;
+			if (!InsertSwordRoute(level, swordRoute[3], face * 4)) return;
+			// Third
+			if (!InsertSwordRoute(level, swordRoute[0], positive45face)) return;
+			if (!InsertSwordRoute(level, swordRoute[1], positive45face + face)) return;
+			if (!InsertSwordRoute(level, swordRoute[2], positive45face + face * 2)) return;
+			if (!InsertSwordRoute(level, swordRoute[3], positive45face + face * 3)) return;
+	}
 }
 
 void Target::CalcNearSecondPattern()
@@ -276,7 +440,8 @@ void Target::CalcSpinningSlash()
 {
 }
 
-bool Target::InsertSwordRoute(std::shared_ptr<GameLevel>& level, std::vector<Vector2>& swordRoute, Vector2& vector)
+bool Target::InsertSwordRoute(std::shared_ptr<GameLevel>& level,
+	std::vector<Vector2>& swordRoute, const Vector2& vector)
 {
 	if (!level->CanAttack(position, vector)) { return false; }
 	swordRoute.emplace_back(position + vector);
