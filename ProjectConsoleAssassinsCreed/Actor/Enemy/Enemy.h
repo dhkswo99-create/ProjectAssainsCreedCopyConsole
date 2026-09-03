@@ -47,7 +47,6 @@ public:
 	// 게터
 	double GetSightDegree() { return sightDegree; }
 	float GetSightRange() { return sightRange; }
-	void SetFace(const Vector2& direction) { face = direction; }
 	Vector2 GetFace() { return face; }
 	// 세터.
 	void SetSightDegree(float degree) { sightDegree = degree; }

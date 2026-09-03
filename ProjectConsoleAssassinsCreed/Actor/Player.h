@@ -39,8 +39,6 @@ private:
 	bool CalcThirdSwordRoute(const Craft::Vector2& face, const Craft::Vector2& position);
 	std::vector<Craft::Vector2> GetSwordRoute(const int routeIndex) 
 	{ return swordRoute[routeIndex]; }
-
-
 private:
 	//검 궤적 계산 변수
 	int positive90Degree[4] = {0, -1, 1, 0};

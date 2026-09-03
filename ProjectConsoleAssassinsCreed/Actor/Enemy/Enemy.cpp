@@ -2,6 +2,8 @@
 #include <Level/GameLevel.h>
 #include <Actor/Enemy/Guard.h>
 #include <Actor/Enemy/Archer.h>
+#include <Actor/Enemy/Target.h>
+#include <Actor/Enemy/Client.h>
 #include <Util/Astar.h>
 #include <Util/Bresenham.h>
 #include <Render/Renderer.h>
@@ -34,6 +36,11 @@ void Enemy::Tick(float deltaTime)
 	if (!found && moveIndex <= 0)
 	{
 		// 무작위 패트롤
+		if (this->IsTypeOf<Target>()
+			|| this->IsTypeOf<Client>())
+		{
+			return;
+		}
 		std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 		std::vector<std::vector<int>> map = level->GetMap();
 		AStar patrolFinder;
@@ -63,39 +70,6 @@ void Enemy::Tick(float deltaTime)
 		{
 			moveIndex = static_cast<int>(pathDirection.size()) - 1;
 		}
-	}
-
-	
-
-
-	// Enemy 방향에 맞게 조정
-	int faceCheck = face.x * 3 + face.y;
-	switch (faceCheck)
-	{
-	case 1: //하단 ( x = 0 y = 1 ) 
-		this->image = L"↓";
-		break;
-	case 2: //우상단 ( x =1 y = -1 )
-		this->image = L"↗";
-		break;
-	case 3: //우 ( x = 1 y = 0 )
-		this->image = L"→";
-		break;
-	case 4: //우하단 ( x = 1 y = 1 )
-		this->image = L"↘";
-		break;
-	case -1: //상단
-		this->image = L"↑";
-		break;
-	case -2: //좌하단
-		this->image = L"↙";
-		break;
-	case -3: //좌
-		this->image = L"←";
-		break;
-	case -4: //좌상단
-		this->image = L"↖";
-		break;
 	}
 }
 // 시야 범위 내에 Player가 5발각된다면 Calling 상태로 진입
@@ -133,9 +107,9 @@ std::vector<Vector2> Enemy::FindRoute(const Vector2& destination)
 					== static_cast<int>(AStar::TileType::Visited))
 				{
 					Renderer::Get().Submit(
-						L"⅓",
+						L"█",
 						Vector2(ix, jx),
-						Color::Red, 
+						Color::Gray, 
 						1,
 						true
 					);
@@ -148,7 +122,7 @@ std::vector<Vector2> Enemy::FindRoute(const Vector2& destination)
 				L"⅓",
 				currentPos = currentPos + path,
 				Color::Green,
-				1,
+				2,
 				true
 			);
 		}
@@ -262,9 +236,8 @@ bool Enemy::Searching()
 	if (!isWall)
 	{
 		// 아주 가깝다면 깨어남
-		if (sightRange / 4 > distance)
+		if (2 > distance)
 		{
-			if (sleep) Awake();
 			return true;
 		}
 		// 일정 거리 내에 있고 시야 각 내에 있다면 발견

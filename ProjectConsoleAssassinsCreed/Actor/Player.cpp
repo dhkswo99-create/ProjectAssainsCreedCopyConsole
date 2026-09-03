@@ -362,6 +362,7 @@ bool Player::CalcSwordRoute(const Vector2& face, const Vector2& position)
 	//검 궤적
 	if (face.x * face.y == 0)
 	{ // 12시 3시 6시 9시 방향을 바라볼 때
+
 		if (!level->CanAttack(position, negative90face)) { return false; }
 	 	swordRoute[0].emplace_back(position + negative90face); //1-1
 		if (!level->CanAttack(position, negative90face * 2)) { return false; }
@@ -700,7 +701,7 @@ void Player::MiniMapSubmit()
 			static_cast<float>(position.y)
 			/ (static_cast<float>(level->GetMap().size()) / 20))
 		), // offset 0, 1 -> 세부 조정
-		Color::White,
+		Color::Green,
 		20,
 		true
 	);
@@ -794,6 +795,11 @@ void Player::Attack(const Vector2& face, float deltaTime)
 void Player::DestroyWeapon()
 {
 	swordSet.clear();
+	doAttack = false;
+	bDoSecondAttack = false;
+	bDoThirdAttack = false;
+	doneAttack = true;
+	delay.Reset();
 }
 
 void Player::BeAttacked(const Vector2& face, int damage)
