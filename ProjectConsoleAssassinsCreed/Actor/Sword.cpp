@@ -1,4 +1,4 @@
-﻿#include "Sword.h"
+﻿  #include "Sword.h"
 
 #include <Actor/Player.h>
 #include <Actor/Enemy/Enemy.h>
@@ -11,9 +11,10 @@ static const SwordFrame sword =
 		{L"◈", 0.025f, Color::Red }; // 총소요 0.17초 7틱.
 
 Sword::Sword(const Vector2& position, const std::vector<Vector2>& path,
-				const std::weak_ptr<Actor>& handler)
-	: super(sword.frame , Vector2::Zero, sword.color), handler(handler)
+				const std::weak_ptr<Actor>& handler, int damage)
+	: super(sword.frame , Vector2::Zero, sword.color), handler(handler), damage(damage)
 {
+	hp = 25;
 	swordPos = path;
 	isSighted = true;
 	sortingOrder = 21;
@@ -35,13 +36,34 @@ void Sword::OnCollision(const std::shared_ptr<Actor>& other)
 			return;
 		}
 	}
+	DoAttack(other, damage);
+}
+
+void Sword::DoAttack(const std::shared_ptr<Actor>& other, int damage)
+{
 	if (
 		other->IsTypeOf<Player>()
 		|| other->IsTypeOf<Enemy>()
 		|| other->IsTypeOf<Arrow>()
 		)
-	{ 
-		other->Destroy();
+	{
+		if (auto swordHandler = handler.lock())
+		{
+			other->BeAttacked(swordHandler->GetFace() , damage);
+		}
+	}
+}
+
+void Sword::BeAttacked(const Vector2& face, int damage)
+{
+	this->hp -= damage;
+	// 체력 0 이하
+	if (this->hp <= 0)
+	{
+		if (auto swordHandler = handler.lock())
+		{
+			swordHandler->DestroyWeapon();
+		}
 	}
 }
 

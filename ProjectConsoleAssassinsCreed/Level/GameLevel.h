@@ -52,6 +52,7 @@ public:
 
 private:
 	void SetDebuger(const bool debuger) { bDebuger = debuger; }
+	void SetCleanViewer(const bool CleanSight) { bCleanSight = CleanSight; }
 	//레벨 초기화 함수
 	virtual void OnInitialized() override;
 
@@ -81,7 +82,11 @@ private:
 
 	//토글처리
 	int debugerTrigger = 0;
+	int cleanSightTrigger = 0;
 	bool bDebuger = false;
+	bool bCleanSight = false;
+
+
 	bool targetClear = false;
 	bool clientClear = false;
 	//게임오버 

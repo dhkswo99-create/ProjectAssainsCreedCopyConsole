@@ -67,6 +67,39 @@ namespace Craft
 		{
 			return;
 		}
-		face= newFace; //연산자 모두 오버로딩한 연산자.
+		face = newFace; //연산자 모두 오버로딩한 연산자.
+		// 세팅된 정면에 따라 플레이어 이미지 변경
+		if (face == Vector2(1, 0))
+		{
+			this->image = L"→";
+		}
+		else if (face == Vector2(1, 1))
+		{
+			this->image = L"↘";
+		}
+		else if (face == Vector2(0, 1))
+		{
+			this->image = L"↓";
+		}
+		else if (face == Vector2(-1, 1))
+		{
+			this->image = L"↙";
+		}
+		else if (face == Vector2(-1, 0))
+		{
+			this->image = L"←";
+		}
+		else if (face == Vector2(-1, -1))
+		{
+			this->image = L"↖";
+		}
+		else if (face == Vector2(0, -1))
+		{
+			this->image = L"↑";
+		}
+		else 
+		{
+			this->image = L"↗";
+		}
 	}
 }

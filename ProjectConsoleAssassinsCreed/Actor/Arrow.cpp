@@ -11,21 +11,23 @@ using namespace Craft;
 using ArrowFrame = Arrow::ArrowFrame;
 static const ArrowFrame arrow[] =
 {
-	{ L"→", 0.3f, Color::Red },
-	{ L"↗", 0.3f, Color::Red },
-	{ L"↑", 0.3f, Color::Red },
-	{ L"↖", 0.3f, Color::Red },
-	{ L"←", 0.3f, Color::Red },
-	{ L"↙", 0.3f, Color::Red },
-	{ L"↓", 0.3f, Color::Red },
-	{ L"↘", 0.3f, Color::Red }
+	{ L"→", 0.3f, Color::Red , Vector2( 1, 0)},
+	{ L"↗", 0.3f, Color::Red , Vector2( 1,-1)},
+	{ L"↑", 0.3f, Color::Red , Vector2( 0,-1)},
+	{ L"↖", 0.3f, Color::Red , Vector2(-1,-1)},
+	{ L"←", 0.3f, Color::Red , Vector2(-1, 0)},
+	{ L"↙", 0.3f, Color::Red , Vector2(-1, 1)},
+	{ L"↓", 0.3f, Color::Red , Vector2( 0, 1)},
+	{ L"↘", 0.3f, Color::Red , Vector2( 1, 1)}
 };
 
 Arrow::Arrow(const Vector2& position, const std::vector<Vector2>& arrowPath)
 	: super(L"a", position, Color::Red),
 	arrowPos(arrowPath)
 {
-
+	//디폴트 화살 데미지
+	damage = 20;
+	hp = 5;
 	Vector2 destination = arrowPath[arrowPath.size() - 1];
 	sortingOrder = 1;
 	isSighted = true;
@@ -102,6 +104,7 @@ void Arrow::Tick(float deltaTime)
 	}
 
 	ChangeImage(arrowQueue[currentIndex].frame);
+	SetFace(arrowQueue[currentIndex].face);
 	SetPosition(arrowPos[currentIndex]);
 
 
@@ -112,13 +115,29 @@ void Arrow::Tick(float deltaTime)
 
 void Arrow::OnCollision(const std::shared_ptr<Actor>& other)
 {
-		//받은 객체에서 자신의 방어력, 속성 등을 기반으로 계산해 데미지를 받고
-		//체력이 모두 소진되면 죽는 것도 받은 객체 책임.
-		//무기 객체를 생성할 때 객체의 데미지, 속성을 넘겨서 무기 객체의 데미지, 속성을 결정할것.
+	// DoAttack에서 분기처리됨.
+	// 화살을 쏜 주체한테는 발사되지 않음.
+	DoAttack(other, damage);
+}
+
+void Arrow::DoAttack(const std::shared_ptr<Actor>& other, int damage)
+{
 	if (other->IsTypeOf<Player>() // 체력 화살의 데미지, 속성 등을 넘기기.
-		|| other->IsTypeOf<Guard>()
+		|| other->IsTypeOf<Enemy>()
+		|| other->IsTypeOf<Sword>()
 		)
 	{
-		other->Destroy();
+		other->BeAttacked(GetFace(), damage);
+	}
+}
+
+void Arrow::BeAttacked(const Vector2& face, int damage)
+{
+	this->hp -= damage;
+	// 체력 0 이하
+	if (this->hp <= 0)
+	{
+		// 화살 소멸
+		Destroy();
 	}
 }

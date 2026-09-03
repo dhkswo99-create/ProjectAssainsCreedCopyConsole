@@ -90,8 +90,15 @@ void GameLevel::IsSighted()
 	for (const std::shared_ptr<Actor>& actor : actorList)
 	{
 		actor->SetIsSighted(
-			(GetDebuger()) ?
+			(bCleanSight) ?
 			true : SearchingActorGL(actor));
+		Vector2 playerPos = GetPlayerPosition();
+		Vector2 actorPos = actor->GetPosition();
+		if (abs(playerPos.x - actorPos.x) > 25
+			|| abs(playerPos.y - actorPos.y) > 25)
+		{
+			continue;
+		}
 		//actor->SetIsSighted(true); //디버깅
 		if (!actor->IsTypeOf<Enemy>()
 			//&& !actor->IsTypeOf<Ground>()
@@ -410,6 +417,11 @@ void GameLevel::Tick(float deltaTime)
 		debugerTrigger = 1 - debugerTrigger;
 		SetDebuger( (debugerTrigger == 1) ? true : false );
 	}
+	if (Input::Get().GetKeyDown(VK_F3))
+	{ 
+		cleanSightTrigger = 1 - cleanSightTrigger;
+		SetCleanViewer( (cleanSightTrigger == 1) ? true : false );
+	}
 
 
 	// ESC 종료
@@ -695,21 +707,29 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 	{
 		if (bDebuger)
 		{ //디버그 모드 플레이어 시야 
-			int sightPosX = (playerPos.x - 4 > 0) ? playerPos.x - 4 : 0;
-			int sightPosY = (playerPos.y - 4 > 0) ? playerPos.y - 4 : 0;
-			for (; sightPosX <= playerPos.x + 4; ++sightPosX)
+			int sightPosX = (playerPos.x - 3 > 0) ? playerPos.x - 4 : 0;
+			for (; sightPosX <= playerPos.x + 3; ++sightPosX)
 			{
-				for (;sightPosY <= playerPos.y + 4; ++sightPosY)
+				int sightPosY = (playerPos.y - 3 > 0) ? playerPos.y - 4 : 0;
+				for (;sightPosY <= playerPos.y + 3; ++sightPosY)
 				{
+					if((playerPos.x - sightPosX)
+						* (playerPos.x - sightPosX)
+						+ (playerPos.y - sightPosY)
+						* (playerPos.y - sightPosY)
+						>= 4*4)
+					{
+						continue;
+					}
 					if (sightPosX == playerPos.x && sightPosY == playerPos.y)
 					{
 						continue;
 					}
 					Renderer::Get().Submit(
-						L"█",
+						L"∬",
 						Vector2(sightPosX, sightPosY),
 						Color::Green,
-						-1,
+						3,
 						true
 					);
 				}
@@ -717,17 +737,17 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 		}
 		return true;
 	}
-	// 거리로 조건문 처리할 때는 제곱 형태로 두고 계산하여 성능 향상 
 	float distance = static_cast<float>(
 		(playerPos.x - actorPos.x)
 		* (playerPos.x - actorPos.x)
 		+ (playerPos.y - actorPos.y)
 		* (playerPos.y - actorPos.y));
+	// 거리로 조건문 처리할 때는 제곱 형태로 두고 계산하여 성능 향상 
 	if (distance < 4 * 4 && 1 <= distance) 
 	{
 		return true;
 	}
-	else if (distance > 30 * 30)
+	else if (distance > 25 * 25)
 	{
 		return false;
 	}
@@ -760,8 +780,8 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 		relativeAngle = 0;
 	}
 		Bresenham bresenham(map);
-	if (relativeAngle < 40 && 1 <= distance
-		&& -40 < relativeAngle)
+	if (relativeAngle < 60 && 1 <= distance
+		&& -60 < relativeAngle)
 	{
 		//std::vector<Vector2> rayDirectionQueue = RayDirectionQueueInsertGL(actorPos);
 		std::vector<Vector2> rayDirectionQueue = bresenham.BresenhamFinder(distance, playerPos, actorPos);
@@ -773,6 +793,16 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 		for (Vector2 path : rayDirectionQueue)
 		{
 			isWall = IsWall(path);
+			if (bDebuger)
+			{
+				Renderer::Get().Submit(
+					L"∬",
+					path,
+					Color::Green,
+					1,
+					true
+				);
+			}
 			if (isWall)
 			{
 				break;

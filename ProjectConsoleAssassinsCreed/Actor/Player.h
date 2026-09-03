@@ -21,6 +21,8 @@ public:
 	
 	//공격함수
 	void Attack(const Craft::Vector2& face, float deltaTime);
+	virtual void BeAttacked(const Vector2& face, int damage) override;
+	virtual void DestroyWeapon() override;
 
 	void SetRange(int newRange) { range = newRange; }
 	
@@ -34,6 +36,7 @@ private:
 	Craft::Vector2 CalMatrix(const Craft::Vector2& face, int matrix0, int matrix1, int matrix2, int matrix3);
 	bool CalcSwordRoute(const Craft::Vector2& face, const Craft::Vector2& position);
 	bool CalcSecondSwordRoute(const Craft::Vector2& face, const Craft::Vector2& position);
+	bool CalcThirdSwordRoute(const Craft::Vector2& face, const Craft::Vector2& position);
 	std::vector<Craft::Vector2> GetSwordRoute(const int routeIndex) 
 	{ return swordRoute[routeIndex]; }
 
@@ -50,10 +53,12 @@ private:
 	// 공격 요청 변수
 	bool doAttack = false;
 	bool bDoSecondAttack = false;
+	bool bDoThirdAttack = false;
 	bool doneAttack = true;
+	int playerDamage = 25;
 
 	// 딜레이 변수 // 디폴트 0.2 
-	float castDelay = 0.2f;
+	float castDelay = 0.22f;
 	float attackDelay = 0.3f;
 
 	//버프 시간
@@ -64,6 +69,9 @@ private:
 
 	// 스킬 지속시간
 	Timer buff;
+
+	// 피격 시 무적 시간
+	Timer invincibilityTimer;
 	
 	// 사거리
 	int range = 3;

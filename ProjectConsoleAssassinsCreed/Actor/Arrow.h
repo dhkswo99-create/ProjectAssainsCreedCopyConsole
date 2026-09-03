@@ -14,7 +14,8 @@ class Arrow : public Actor
 		ArrowFrame(
 			const std::wstring& frame, //글자값
 			float playTime = 0.0f, //유지 시간
-			Craft::Color color = Craft::Color::Red) //색상
+			Craft::Color color = Craft::Color::Red,
+			Craft::Vector2 face = Craft::Vector2::Zero) //색상
 			: frame(frame), playTime(playTime), color(color)
 		{
 		}
@@ -29,18 +30,26 @@ class Arrow : public Actor
 
 		// 색상.
 		Craft::Color color = Craft::Color::White;
+
+		Craft::Vector2 face;
 	};
 public:
 	Arrow(const Vector2& position, const std::vector<Vector2>& arrowPath);
 	~Arrow() = default;
  
 	virtual void OnCollision(const std::shared_ptr<Actor>& other) override;
+	virtual void DoAttack(const std::shared_ptr<Actor>& other, int damage) override;
+	virtual void BeAttacked(const Vector2& face, int damage) override;
 	
 
 private:
 	virtual void Tick(float deltaTime) override;
 
 private:
+	// 데미지
+	int damage;
+
+	// 화살 큐 인덱스
 	int currentIndex;
 	int effectSequenceCount;
 	// 애니메이션 재생에 사용할 타이머.

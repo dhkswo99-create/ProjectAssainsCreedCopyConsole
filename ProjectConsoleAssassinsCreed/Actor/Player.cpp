@@ -13,6 +13,7 @@ Player::Player(const Vector2& position)
 {
 	// 다른 객체들보다 높은 우선 순위를 둘 것.
 	// Enemy 객체와 벽 객체와는 Collision 시 overlap 불가
+	hp = 100;
 	isSighted = true;
 	face = Vector2::Right;
 	moveSpeed = 10.0f;
@@ -20,6 +21,7 @@ Player::Player(const Vector2& position)
 	xPosition = static_cast<float>(position.x);
 	yPosition = static_cast<float>(position.y);
 	delay.SetTargetTime(0);
+	invincibilityTimer.SetTargetTime(0.2f);
 	//충돌 허용
 	SetColiisionEnabled(true);
 
@@ -56,6 +58,15 @@ void Player::Tick(float deltaTime)
 
 	delay.Tick(deltaTime);
 	buff.Tick(deltaTime);
+	invincibilityTimer.Tick(deltaTime);
+
+	if (invincibilityTimer.IsTimeOut())
+	{
+		if (this->color == Color::Red)
+		{
+			this->SetColor(Color::Green);
+		}
+	}
 
 	//이동 오른쪽 1 | 왼쪽 -1
 	float directionX = 0.0f;
@@ -92,6 +103,11 @@ void Player::Tick(float deltaTime)
 		moveSpeed = 10.0f;
 	}
 
+	if (Input::Get().GetKeyDown(VK_SPACE) && bDoSecondAttack)
+	{
+		bDoThirdAttack = true;
+	}
+
 	if (Input::Get().GetKeyDown(VK_SPACE) && doAttack)
 	{
 		bDoSecondAttack = true;
@@ -114,10 +130,33 @@ void Player::Tick(float deltaTime)
 		delay.SetTargetTime(castDelay);
 		if (delay.IsTimeOut())
 		{
+			Renderer::Get().Submit(
+				L"⒂",
+				GetPosition(),
+				Color::Gray,
+				0,
+				true
+			);
+			Renderer::Get().Submit(
+				L"⒂",
+				GetPosition() + face,
+				Color::Gray,
+				0,
+				true
+			);
+			std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+			// 공격 전 이동
+			if (level->CanMove(GetPosition() + face))
+			{
+				SetPosition(GetPosition() + face);
+				xPosition = static_cast<float>(position.x);
+				yPosition = static_cast<float>(position.y);
+			}
 			// 검 루트 생성
 			CalcSwordRoute(GetFace(), GetPosition());
 			// 루트를 따라 공격
   			Attack(face, deltaTime);
+			
 			// 루트 초기화
 			for (std::vector<Vector2>& route : swordRoute)
 			{
@@ -147,12 +186,29 @@ void Player::Tick(float deltaTime)
   			CalcSecondSwordRoute(GetFace(), GetPosition());
 			// 루트를 따라 공격
 			Attack(face, deltaTime);
+			// 공격 중 이동
 			std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
-			if (level->CanMove(GetPosition() - face))
+			Vector2 positive90face = CalMatrix(face, positive90Degree[0], positive90Degree[1],
+				positive90Degree[2], positive90Degree[3]);
+			if (level->CanMove(GetPosition() + positive90face))
 			{
-				SetPosition(GetPosition() - face);
-				xPosition = position.x;
-				yPosition = position.y;
+				Renderer::Get().Submit(
+					L"⒂",
+					GetPosition(),
+					Color::Gray,
+					0,
+					true
+				);
+				Renderer::Get().Submit(
+					L"⒂",
+					GetPosition() + positive90face,
+					Color::Gray,
+					0,
+					true
+				);
+				SetPosition(GetPosition() + positive90face);
+				xPosition = static_cast<float>(position.x);
+				yPosition = static_cast<float>(position.y);
 			}
 
 			// 루트 초기화
@@ -163,13 +219,42 @@ void Player::Tick(float deltaTime)
 			// 검 소유권 제거
 			swordSet.clear();
 			// 공격 중
-			doneAttack = false;
+			if (!bDoThirdAttack)
+			{
+				doneAttack = false;
+			}
 			// 1차 공격 시도 끝
 			bDoSecondAttack = false;
 			// 딜레이 리셋
 			delay.Reset();
 		}
 	}
+	if (bDoThirdAttack &&!bDoSecondAttack && !doAttack)
+	{
+		//선딜 세팅
+		delay.SetTargetTime(castDelay);
+		if (delay.IsTimeOut())
+		{
+			// 검 루트 생성
+  			CalcThirdSwordRoute(GetFace(), GetPosition());
+			// 루트를 따라 공격
+			Attack(face, deltaTime);
+			// 루트 초기화
+			for (std::vector<Vector2>& route : swordRoute)
+			{
+				route.clear();
+			}
+			// 검 소유권 제거
+			swordSet.clear();
+			// 공격 중
+			doneAttack = false;
+			// 3차 공격 시도 끝
+			bDoThirdAttack = false;
+			// 딜레이 리셋
+			delay.Reset();
+		}
+	}
+
 	//후딜레이
 	if (!doneAttack)
 	{
@@ -183,7 +268,7 @@ void Player::Tick(float deltaTime)
 			doneAttack = true;
 		}
 	}
-
+	// 방향 설정 및 이동
 	if (doneAttack && !doAttack)
 	{
 		if (Input::Get().GetKeyDown('D') || Input::Get().GetKeyDown('d'))
@@ -499,6 +584,110 @@ bool Player::CalcSecondSwordRoute(const Vector2& face, const Vector2& position)
 
 	return true;
 }
+bool Player::CalcThirdSwordRoute(const Craft::Vector2& face, const Craft::Vector2& position)
+{
+	// 바라보는 방향 기준으로 회전 계산
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+
+	Vector2 negative90face = CalMatrix(face, negative90Degree[0], negative90Degree[1],
+		negative90Degree[2], negative90Degree[3]);
+	Vector2 negative45face = CalMatrix(face, negative45Degree[0], negative45Degree[1],
+		negative45Degree[2], negative45Degree[3]);
+	Vector2 positive45face = CalMatrix(face, positive45Degree[0], positive45Degree[1],
+		positive45Degree[2], positive45Degree[3]);
+	Vector2 positive90face = CalMatrix(face, positive90Degree[0], positive90Degree[1],
+		positive90Degree[2], positive90Degree[3]);
+	//검 궤적
+	if (face.x == 0 || face.y == 0)
+	{ // 12시 3시 6시 9시 방향을 바라볼 때
+		if (!level->CanAttack(position, negative45face)) { return false; }
+		swordRoute[0].emplace_back(position + negative45face); //1-1
+		if (!level->CanAttack(position, negative45face * 2)) { return false; }
+		swordRoute[1].emplace_back(position + negative45face * 2); //1-2
+		if (!level->CanAttack(position, negative45face * 2)) { return false; }
+		swordRoute[2].emplace_back(position + negative45face * 2); //1-3
+
+		if (!level->CanAttack(position, face)) { return false; }
+		swordRoute[0].emplace_back(position + face); //2-1
+		if (!level->CanAttack(position, negative45face + face)) { return false; }
+		swordRoute[1].emplace_back(position + negative45face + face); //2-2
+		if (!level->CanAttack(position, negative45face * 2 + face)) { return false; }
+		swordRoute[2].emplace_back(position + negative45face * 2 + face); //2-3
+
+		if (!level->CanAttack(position, positive45face)) { return false; }
+		swordRoute[0].emplace_back(position + positive45face); //3-1
+		if (!level->CanAttack(position, face * 2)) { return false; }
+		swordRoute[1].emplace_back(position + face * 2); //3-2
+		if (!level->CanAttack(position, negative45face + face * 2)) { return false; }
+		swordRoute[2].emplace_back(position + negative45face + face * 2); //3-3
+
+		if (!level->CanAttack(position, positive45face)) { return false; }
+		swordRoute[0].emplace_back(position + positive45face); //4-1
+		if (!level->CanAttack(position, positive45face + face)) { return false; }
+		swordRoute[1].emplace_back(position + positive45face + face); //4-2
+		if (!level->CanAttack(position, face * 3)) { return false; }
+		swordRoute[2].emplace_back(position + face * 3); //4-3
+
+		if (!level->CanAttack(position, positive45face)) { return false; }
+		swordRoute[0].emplace_back(position + positive45face); //5-1
+		if (!level->CanAttack(position, positive45face + positive90face)) { return false; }
+		swordRoute[1].emplace_back(position + positive45face + positive90face); //5-2
+		if (!level->CanAttack(position, positive45face * 2)) { return false; }
+		swordRoute[2].emplace_back(position + positive45face * 2); //5-3
+
+		if (!level->CanAttack(position, positive90face)) { return false; }
+		swordRoute[0].emplace_back(position + positive90face); //6-1
+		if (!level->CanAttack(position, positive90face * 2)) { return false; }
+		swordRoute[1].emplace_back(position + positive90face * 2); //6-2
+	}
+	else
+	{ //대각선 방향을 바라볼 때
+		if (!level->CanAttack(position, face)) { return false; }
+		swordRoute[0].emplace_back(position + face); //1-1
+		if (!level->CanAttack(position, negative45face + face)) { return false; }
+		swordRoute[1].emplace_back(position + negative45face + face); //1-2
+		if (!level->CanAttack(position, negative45face + face)) { return false; }
+		swordRoute[2].emplace_back(position + negative45face + face); //1-3
+
+		if (!level->CanAttack(position, face)) { return false; }
+		swordRoute[0].emplace_back(position + face); //2-1
+		if (!level->CanAttack(position, face * 2)) { return false; }
+		swordRoute[1].emplace_back(position + face * 2); //2-2
+		if (!level->CanAttack(position, face * 3)) { return false; }
+		swordRoute[2].emplace_back(position + face * 3); //2-3
+
+		if (!level->CanAttack(position, face)) { return false; }
+		swordRoute[0].emplace_back(position + face); //3-1
+		if (!level->CanAttack(position, face + positive45face)) { return false; }
+		swordRoute[1].emplace_back(position + face + positive45face); //3-2
+		if (!level->CanAttack(position, face * 2 + positive45face)) { return false; }
+		swordRoute[2].emplace_back(position + face * 2 + positive45face); //3-3
+
+		if (!level->CanAttack(position, positive45face)) { return false; }
+		swordRoute[0].emplace_back(position + positive45face); //4-1
+		if (!level->CanAttack(position, positive45face * 2)) { return false; }
+		swordRoute[1].emplace_back(position + positive45face * 2); //4-2
+		if (!level->CanAttack(position, face + positive45face * 2)) { return false; }
+		swordRoute[2].emplace_back(position + face + positive45face * 2); //4-3
+
+		if (!level->CanAttack(position, positive45face)) { return false; }
+		swordRoute[0].emplace_back(position + positive45face); //5-1
+		if (!level->CanAttack(position, positive45face * 2)) { return false; }
+		swordRoute[1].emplace_back(position + positive45face * 2); //5-2
+		if (!level->CanAttack(position, positive45face * 3)) { return false; }
+		swordRoute[2].emplace_back(position + positive45face * 3); //5-3
+
+
+		if (!level->CanAttack(position, positive45face)) { return false; }
+		swordRoute[0].emplace_back(position + positive45face); //6-1
+		if (!level->CanAttack(position, positive45face + positive90face)) { return false; }
+		swordRoute[1].emplace_back(position + positive45face + positive90face); //6-2
+	}
+
+
+	return true;
+}
+
 void Player::MiniMapSubmit()
 {
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
@@ -510,7 +699,7 @@ void Player::MiniMapSubmit()
 			1 + 	static_cast<int>(
 			static_cast<float>(position.y)
 			/ (static_cast<float>(level->GetMap().size()) / 20))
-		), 
+		), // offset 0, 1 -> 세부 조정
 		Color::White,
 		20,
 		true
@@ -595,10 +784,45 @@ void Player::Attack(const Vector2& face, float deltaTime)
 			swordSet.emplace_back(owner->SpawnActor<Sword>(
 				GetPosition(),
 				GetSwordRoute(ix),
-				weak_from_this() // 검에게 생성 객체 접근 권한 부여
+				weak_from_this(), // 검에게 생성 객체 접근 권한 부여
+				playerDamage
 			));
 		}
 	} 
+}
+
+void Player::DestroyWeapon()
+{
+	swordSet.clear();
+}
+
+void Player::BeAttacked(const Vector2& face, int damage)
+{
+	if (!invincibilityTimer.IsTimeOut())
+	{
+		return;
+	}
+	// 체력 감소
+	this->hp -= damage;
+	this->SetColor(Color::Red);
+	// 넉백 
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+	if (level->CanMove(GetPosition() + face))
+	{
+		SetPosition(GetPosition() + face);
+		xPosition = GetPosition().x + face.x;
+		yPosition = GetPosition().y + face.y;
+	}
+	
+	// 체력 0 이하
+	if (this->hp <= 0)
+	{
+		// 플레이어가 휘두른 칼 삭제 -> 필요한가? 싶긴 함
+		swordSet.clear();
+		// 플레이어 소멸
+		Destroy();
+	}
+	invincibilityTimer.Reset();
 }
 
 void Player::OnCollision(const std::shared_ptr<Actor>& other)

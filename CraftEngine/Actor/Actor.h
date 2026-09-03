@@ -32,6 +32,17 @@ namespace Craft
 		//충돌 이벤트 함수
 		virtual void OnCollision(const std::shared_ptr<Actor>& other);
 
+		// 공격함수
+		virtual void DoAttack(const std::shared_ptr<Actor>& other, int damage)
+		{
+		}
+		virtual void BeAttacked(const Vector2& face, int damage)
+		{
+		}
+		virtual void DestroyWeapon()
+		{ 
+		}
+
 		//액터 제거 함수
 		void Destroy();
 		// 게임 엔진 종료 함수
@@ -56,6 +67,7 @@ namespace Craft
 		inline bool GetKeepSighted() const { return keepSighted; }
 		void SetKeepSighted(bool newKeepSighted) { this->keepSighted =  newKeepSighted; }
 
+		void SetHp(const int newHp) { hp = newHp; }
 		void SetPosition(const Vector2& newposition);
 		void SetFace(const Vector2& newFace);
 		void SetColor(const Color newcolor) { this->color = newcolor; }
@@ -97,6 +109,10 @@ namespace Craft
 
 
 	protected:
+		//체력
+		int hp;
+
+		//시야
 		bool keepSighted;
 		bool isSighted;
 		//땅인지

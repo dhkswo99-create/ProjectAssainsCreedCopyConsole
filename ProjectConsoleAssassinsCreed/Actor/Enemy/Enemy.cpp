@@ -170,6 +170,10 @@ void Enemy::Move(const Vector2& direction, float deltaTime)
 	if (dx > 1 || -1 > dx || dy > 1 || -1 > dy)
 	{
 		newPosition = currentPosition + direction;
+		if (dx > 2 || -2 > dx || dy > 2 || -2 > dy)
+		{
+			newPosition = newPosition + direction;
+		}
 		if (level->CanMove(newPosition))
 		{
 			SetPosition(newPosition);
@@ -245,7 +249,7 @@ bool Enemy::Searching()
 				L"#",
 				path,
 				Color::White,
-				1,
+				1, 
 				true
 			);
 		}

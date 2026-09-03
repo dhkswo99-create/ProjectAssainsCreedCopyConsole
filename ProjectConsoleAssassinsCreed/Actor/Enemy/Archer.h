@@ -15,6 +15,7 @@ public:
 	virtual void Tick(float deltaTime) override;
 
 	void Attack(int range, const Vector2& face, float deltaTime);
+	virtual void BeAttacked(const Vector2& face, int damage) override;
 
 	void WillAttack(); 
 
@@ -41,6 +42,12 @@ private:
 
 	double facingAngle;
 
+	//공격 딜레이
 	Timer delay;
+
+	// 피격 시 무적 시간
+	Timer invincibilityTimer;
+
+	// 공격 사거리
 	int range;
 };

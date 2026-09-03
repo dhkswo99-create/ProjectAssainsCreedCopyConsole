@@ -80,8 +80,6 @@ protected:
 	//찾았는지
 	bool found = false;
 
-	Vector2 face = Vector2::Zero;
-
 	// 최적 경로를 저장할 공간
 	// path를 하나씩 꺼내 이동하게 할 것.
 	int moveIndex = 0;
@@ -105,4 +103,3 @@ private:
 	// 게임 레벨에서 불러올 map 데이터
 	std::vector<std::vector<int>> map;
 };
-

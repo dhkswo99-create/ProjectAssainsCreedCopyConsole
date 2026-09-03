@@ -6,7 +6,8 @@
 #include <cmath>
 
 using namespace Craft;
-class Guard : public Enemy
+class Guard : public Enemy ,
+	public std::enable_shared_from_this<Actor>
 {
 	TYPE_DECLARATIONS(Guard, Enemy)
 
@@ -17,6 +18,9 @@ public:
 	virtual void Tick(float deltaTime) override;
 
 	void Attack(int range, const Vector2& face, float deltaTime);
+	virtual void BeAttacked(const Vector2& face, int damage) override;
+	virtual void DestroyWeapon()override;
+	Vector2 GetFace() { return face; }
 
 	void WillAttack();
 
@@ -31,6 +35,10 @@ public:
 	//// 모든 Enemy Awake, Move Call완료 시 caller = false;
 	//void Call(const Vector2& spotOfDetection);
 private:
+	int guardDamage = 10;
+
+	std::vector<std::vector<Vector2>> swordRoute;
+	std::vector<std::shared_ptr<Sword>> swordSet;
 
 	float castDelay;
 	float attackDelay;  // 랜덤으로 돌릴 것
@@ -38,6 +46,7 @@ private:
 	bool doAttack = false;
 	bool doneAttack = true;
 	Timer delay;
+	Timer invincibilityTimer;
 	int range = 3;
 };
 

@@ -12,15 +12,20 @@ using namespace Craft;
 Guard::Guard(const Vector2& position)
 	:super(L"G", position, Color::Yellow)
 {
+	hp = 50;
 	range = 3;
 	SetSightRange(15.0f);
 	SetMoveSpeed(8.0f);
 	sortingOrder = 3;
 	castDelay = 0.6f;
 	attackDelay = 0.3f;
-	SetFace(Vector2::Left);
+	invincibilityTimer.SetTargetTime(0.2f);
 	//충돌 허용
 	SetColiisionEnabled(true);
+	for (int ix = 0; ix < range; ++ix)
+	{
+		swordRoute.emplace_back();
+	}
 }
 
 void Guard::Tick(float deltaTime)
@@ -28,6 +33,17 @@ void Guard::Tick(float deltaTime)
 	super::Tick(deltaTime);
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	delay.Tick(deltaTime);
+	invincibilityTimer.Tick(deltaTime);
+
+
+	if (invincibilityTimer.IsTimeOut())
+	{
+		if (this->color == Color::Red)
+		{
+			this->SetColor(Color::Yellow);
+		}
+	}
+
 
 	if (found)
 	{
@@ -37,7 +53,6 @@ void Guard::Tick(float deltaTime)
 	}
 	else
 	{
-
 		sightRange = 15.f;
 		sightDegree = 45;
 	}
@@ -95,16 +110,50 @@ void Guard::Attack(int range, const Vector2&face, float deltaTime)
 {
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	std::shared_ptr<Level> owner = GetOwner();
+	Vector2 currentPos = GetPosition();
 	if (owner)
 	{
-		Vector2 	swordPath = position;
-		for (int ix = 1; ix <= range && level->CanAttack(swordPath, face); ++ix)
+		for (int ix = 0; ix < range && level->CanAttack(currentPos, GetFace()) ; ++ix)
 		{
-			swordPath.x += face.x;
-			swordPath.y += face.y;
-			//owner->SpawnActor<Sword>(swordPath);
+			swordRoute[ix].emplace_back(currentPos = currentPos + GetFace());
+			swordSet.emplace_back(
+				owner->SpawnActor<Sword>(GetPosition(), swordRoute[ix], weak_from_this(), guardDamage)
+			);
+			swordRoute[ix].clear();
 		}
 	}
+}
+
+void Guard::BeAttacked(const Vector2& face, int damage)
+{
+	if(!invincibilityTimer.IsTimeOut())
+	{
+		return;
+	}
+	// 체력 감소
+	this->hp -= damage;
+	this->SetColor(Color::Red);
+	// 넉백 
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+	if (level->CanMove(GetPosition() + face))
+	{
+		SetPosition(GetPosition() + face);
+	}
+
+	// 체력 0 이하
+	if (this->hp <= 0)
+	{
+		// 플레이어가 휘두른 칼 삭제 -> 필요한가? 싶긴 함
+		swordSet.clear();
+		// 플레이어 소멸
+		Destroy();
+	}
+	invincibilityTimer.Reset();
+}
+
+void Guard::DestroyWeapon()
+{
+	swordSet.clear();
 }
 
 void Guard::WillAttack()
@@ -114,7 +163,7 @@ void Guard::WillAttack()
 
 void Guard::FacePlayer()
 {
-	face = FacingDirection(GetPosition());
+	SetFace(FacingDirection(GetPosition()));
 }
 
 

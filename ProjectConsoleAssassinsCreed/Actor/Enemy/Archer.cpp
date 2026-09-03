@@ -32,6 +32,15 @@ void Archer::Tick(float deltaTime)
 
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	delay.Tick(deltaTime);
+	invincibilityTimer.Tick(deltaTime);
+
+	if (invincibilityTimer.IsTimeOut())
+	{
+		if (this->color == (Color::Red))
+		{
+			this->SetColor(Color::Cyan);
+		}
+	}
 
 	if (found)
 	{
@@ -122,6 +131,30 @@ void Archer::Attack(int range, const Vector2& face, float deltaTime)
 			owner->SpawnActor<Arrow>(GetPosition(), arrowPath);
 		}
 	}
+}
+
+void Archer::BeAttacked(const Vector2& face, int damage)
+{
+	if (!invincibilityTimer.IsTimeOut())
+	{
+		return;
+	}
+	// 체력 감소
+	this->hp -= damage;
+	this->SetColor(Color::Red);
+	// 넉백 
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+	if (level->CanMove(GetPosition() + face))
+	{
+		SetPosition(GetPosition() + face);
+	}
+
+	// 체력 0 이하
+	if (this->hp <= 0)
+	{
+		Destroy();
+	}
+	invincibilityTimer.Reset();
 }
 
 void Archer::WillAttack()

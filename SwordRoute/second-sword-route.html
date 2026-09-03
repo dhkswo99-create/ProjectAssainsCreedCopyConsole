@@ -1,0 +1,148 @@
+<div id="second-sword-route-viz">
+  <h2>두 번째 검 경로</h2>
+  <div class="viz-controls" aria-label="경로 보기 설정">
+    <label class="form-label">바라보는 방향
+      <select class="form-select" id="ssr-mode">
+        <option value="cardinal">직선 방향 (12·3·6·9시)</option>
+        <option value="diagonal">대각선 방향</option>
+      </select>
+    </label>
+    <label class="form-label">단계 <span id="ssr-step-value" class="tabular-nums">1 / 7</span>
+      <input class="form-range" id="ssr-step" type="range" min="1" max="7" value="1">
+    </label>
+  </div>
+  <div class="ssr-legend text-small" aria-hidden="true">
+    <span><i class="ssr-dot ssr-player"></i>Player</span>
+    <span><i class="ssr-dot ssr-r0"></i>swordRoute[0]</span>
+    <span><i class="ssr-dot ssr-r1"></i>swordRoute[1]</span>
+    <span><i class="ssr-dot ssr-r2"></i>swordRoute[2]</span>
+  </div>
+  <div class="ssr-stage">
+    <svg id="ssr-svg" viewBox="0 0 640 480" role="img" aria-labelledby="ssr-title ssr-desc">
+      <title id="ssr-title">검 경로의 상대 좌표</title>
+      <desc id="ssr-desc">플레이어 위치를 원점으로 하여 선택한 단계에서 세 검 경로에 추가되는 좌표를 보여줍니다.</desc>
+      <g id="ssr-grid"></g>
+      <g id="ssr-marks"></g>
+    </svg>
+  </div>
+  <div class="card ssr-detail" id="ssr-detail" aria-live="polite"></div>
+</div>
+
+<style>
+  #second-sword-route-viz { width: 100%; color: var(--foreground); }
+  #second-sword-route-viz h2 { margin-bottom: 12px; }
+  #second-sword-route-viz .ssr-legend { display:flex; flex-wrap:wrap; gap:14px; margin:10px 0; color:var(--muted-foreground); }
+  #second-sword-route-viz .ssr-legend span { display:inline-flex; align-items:center; gap:6px; }
+  #second-sword-route-viz .ssr-dot { width:10px; height:10px; border-radius:50%; display:inline-block; }
+  #second-sword-route-viz .ssr-player { background:var(--foreground); }
+  #second-sword-route-viz .ssr-r0 { background:var(--viz-series-1); }
+  #second-sword-route-viz .ssr-r1 { background:var(--viz-series-2); }
+  #second-sword-route-viz .ssr-r2 { background:var(--viz-series-3); }
+  #second-sword-route-viz .ssr-stage { width:100%; }
+  #second-sword-route-viz svg { display:block; width:100%; max-height:520px; }
+  #second-sword-route-viz .ssr-detail { margin-top:10px; padding:12px; }
+  #second-sword-route-viz .ssr-detail-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+  #second-sword-route-viz .ssr-detail-item { min-width:0; }
+  #second-sword-route-viz .ssr-label { color:var(--muted-foreground); margin-bottom:3px; }
+  #second-sword-route-viz .ssr-formula { overflow-wrap:anywhere; }
+  @media (max-width:520px) { #second-sword-route-viz .ssr-detail-grid { grid-template-columns:1fr; } }
+</style>
+
+<script>
+(() => {
+  const root = document.getElementById('second-sword-route-viz');
+  const modeEl = root.querySelector('#ssr-mode');
+  const stepEl = root.querySelector('#ssr-step');
+  const stepValue = root.querySelector('#ssr-step-value');
+  const gridG = root.querySelector('#ssr-grid');
+  const marksG = root.querySelector('#ssr-marks');
+  const detail = root.querySelector('#ssr-detail');
+  const NS = 'http://www.w3.org/2000/svg';
+  const cx = 320, cy = 240, scale = 68;
+
+  const add = (a,b) => [a[0]+b[0],a[1]+b[1]];
+  const mul = (a,n) => [a[0]*n,a[1]*n];
+  const rot = (v,deg) => {
+    const r=deg*Math.PI/180, c=Math.cos(r), s=Math.sin(r);
+    return [Math.round(v[0]*c-v[1]*s),Math.round(v[0]*s+v[1]*c)];
+  };
+  const vectors = mode => {
+    const face = mode === 'cardinal' ? [0,-1] : [1,-1];
+    return { face, p45:rot(face,45), p90:rot(face,90), n45:rot(face,-45) };
+  };
+  const routes = mode => {
+    const {face:f,p45:a,p90:b,n45:n} = vectors(mode);
+    if(mode==='cardinal') return [
+      [[...b],add(b,mul(f,-1)),add(b,mul(f,-1))],
+      [[...a],mul(b,2),mul(b,2)],
+      [[...a],add(b,a),add(mul(b,2),a)],
+      [[...a],mul(a,2),add(mul(a,2),b)],
+      [[...a],add(a,f),add(mul(a,2),f)],
+      [[...a],add(a,f),add(a,mul(f,2))],
+      [[...a],mul(f,2),mul(f,3)]
+    ];
+    return [
+      [[...a],mul(n,-1),mul(n,-1)],
+      [[...a],[...b],[...b]],
+      [[...a],add(a,b),mul(b,2)],
+      [[...a],mul(a,2),add(mul(a,2),b)],
+      [[...a],add(a,f),add(mul(a,2),f)],
+      [[...a],add(a,f),mul(f,2)],
+      [[...a],[...f],add(f,n)]
+    ];
+  };
+  const formulas = {
+    cardinal:[
+      ['+90°','+90° − face','+90° − face'],
+      ['+45°','2×(+90°)','2×(+90°)'],
+      ['+45°','+90° + +45°','2×(+90°) + +45°'],
+      ['+45°','2×(+45°)','2×(+45°) + +90°'],
+      ['+45°','+45° + face','2×(+45°) + face'],
+      ['+45°','+45° + face','+45° + 2×face'],
+      ['+45°','2×face','3×face']
+    ],
+    diagonal:[
+      ['+45°','−(−45°)','−(−45°)'],
+      ['+45°','+90°','+90°'],
+      ['+45°','+45° + +90°','2×(+90°)'],
+      ['+45°','2×(+45°)','2×(+45°) + +90°'],
+      ['+45°','+45° + face','2×(+45°) + face'],
+      ['+45°','+45° + face','2×face'],
+      ['+45°','face','face + (−45°)']
+    ]
+  };
+  function el(name,attrs={}) { const e=document.createElementNS(NS,name); for(const [k,v] of Object.entries(attrs)) e.setAttribute(k,v); return e; }
+  function drawGrid(){
+    gridG.replaceChildren();
+    for(let i=-4;i<=4;i++){
+      const v=el('line',{x1:cx+i*scale,y1:36,x2:cx+i*scale,y2:444,stroke:'var(--border)','stroke-width':i===0?2:1});
+      const h=el('line',{x1:48,y1:cy+i*scale,x2:592,y2:cy+i*scale,stroke:'var(--border)','stroke-width':i===0?2:1});
+      gridG.append(v,h);
+    }
+  }
+  function render(){
+    const mode=modeEl.value, step=Number(stepEl.value)-1;
+    const pts=routes(mode)[step], fs=formulas[mode][step];
+    stepValue.textContent=`${step+1} / 7`;
+    marksG.replaceChildren();
+    const {face}=vectors(mode);
+    const arrow=el('line',{x1:cx,y1:cy,x2:cx+face[0]*scale*.72,y2:cy+face[1]*scale*.72,stroke:'var(--foreground)','stroke-width':4,'stroke-linecap':'round'});
+    marksG.append(arrow);
+    const colors=['var(--viz-series-1)','var(--viz-series-2)','var(--viz-series-3)'];
+    pts.forEach((p,i)=>{
+      const x=cx+p[0]*scale, y=cy+p[1]*scale;
+      const line=el('line',{x1:cx,y1:cy,x2:x,y2:y,stroke:colors[i],'stroke-width':3,'stroke-opacity':.55});
+      const circle=el('circle',{cx:x,cy:y,r:17,fill:colors[i]});
+      const label=el('text',{x,y:y+5,'text-anchor':'middle',fill:'var(--background)','font-size':12,'font-weight':500});
+      label.textContent=String(i);
+      marksG.append(line,circle,label);
+    });
+    const player=el('circle',{cx,cy,r:20,fill:'var(--foreground)'});
+    const ptxt=el('text',{x:cx,y:cy+5,'text-anchor':'middle',fill:'var(--background)','font-size':12,'font-weight':500}); ptxt.textContent='P';
+    marksG.append(player,ptxt);
+    detail.innerHTML=`<div class="ssr-detail-grid">${fs.map((f,i)=>`<div class="ssr-detail-item"><div class="ssr-label">swordRoute[${i}]</div><div class="ssr-formula"><code>position ${f}</code></div></div>`).join('')}</div>`;
+  }
+  modeEl.addEventListener('change',render); stepEl.addEventListener('input',render);
+  drawGrid(); render();
+})();
+</script>

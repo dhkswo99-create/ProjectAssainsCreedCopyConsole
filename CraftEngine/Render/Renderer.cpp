@@ -277,8 +277,22 @@ namespace Craft
 					
 							+ BACKGROUND_GREEN;
 					}
-
-
+					if (command.image == L"∬")
+					{
+						frame->charInfoArray[index].Attributes
+							= static_cast<DWORD>(command.color)
+					
+							+ BACKGROUND_GREEN
+							+ BACKGROUND_BLUE;
+					}
+					if (command.image == L"⒂")
+					{
+						frame->charInfoArray[index].Attributes
+							= static_cast<DWORD>(command.color)
+					
+							+ BACKGROUND_INTENSITY;
+					}
+					
 					//}
 					//그리기 우선 순위 값 설정
 					frame->sortingOrderArray[index] = command.sortingOrder;

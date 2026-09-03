@@ -33,14 +33,19 @@ class Sword : public Actor
 
 public:
 	Sword(const Vector2& position, const std::vector<Vector2>& path,
-		const std::weak_ptr<Actor>& handler);
+		const std::weak_ptr<Actor>& handler, int damage);
 	~Sword() = default;
 	virtual void OnCollision(const std::shared_ptr<Actor>& other) override;
-
+	virtual void DoAttack(const std::shared_ptr<Actor>& other, int damage) override;
+	virtual void BeAttacked(const Vector2& face, int damage) override;
 private:
 	virtual void Tick(float deltaTime) override;
 
 private:
+	//데미지
+	int damage;
+
+	//현재 출력될 인덱스
 	int currentIndex;
 	int effectSequenceCount;
 	// 애니메이션 재생에 사용할 타이머.
