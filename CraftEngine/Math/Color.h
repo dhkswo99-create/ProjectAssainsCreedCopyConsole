@@ -25,6 +25,24 @@ namespace Craft
 		BrightRed = Red + FOREGROUND_INTENSITY,	//ⓝ
 		BrightPurple = Purple + FOREGROUND_INTENSITY,	//ⓞ
 		BrightYellow = Yellow + FOREGROUND_INTENSITY,	//ⓟ
-		BrightGray = Gray + FOREGROUND_INTENSITY,	//ⓠ 	
+		White = Gray + FOREGROUND_INTENSITY,	//ⓠ 	
+		// 매핑
+		bBlack = BACKGROUND_RED - BACKGROUND_RED, //ⓐ
+		bBlue = BACKGROUND_BLUE, //ⓑ
+		bGreen = BACKGROUND_GREEN,	//ⓒ
+		bCyan = Green + Blue,	//ⓓ
+		bRed = BACKGROUND_RED,	//ⓔ
+		bPurple = Red + Blue,	//ⓕ
+		bYellow = Red + Green,	//ⓖ
+		bGray = Red + Green + Blue,	//ⓗ
+
+		bBrightBlack = Black + BACKGROUND_INTENSITY, 	//ⓙ
+		bBrightBlue = Blue + BACKGROUND_INTENSITY,	//ⓚ
+		bBrightGreen = Green + BACKGROUND_INTENSITY,	//ⓛ
+		bBrightCyan = Cyan + BACKGROUND_INTENSITY,	//ⓜ
+		bBrightRed = Red + BACKGROUND_INTENSITY,	//ⓝ
+		bBrightPurple = Purple + BACKGROUND_INTENSITY,	//ⓞ
+		bBrightYellow = Yellow + BACKGROUND_INTENSITY,	//ⓟ
+		bWhite = Gray + BACKGROUND_INTENSITY,	//ⓠ 	
 	};
 }

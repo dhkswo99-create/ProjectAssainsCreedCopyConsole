@@ -41,7 +41,7 @@ namespace Craft
 	}
 	void Level::Draw()
 	{
-		for (std::shared_ptr<Actor>& actor : actorList)
+		for (std::shared_ptr<Actor>& actor : useTickActorList)
 		{
 			//검증 활성화 되지 않았으면 건너뛰기
 			if (!actor->IsActive())

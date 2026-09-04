@@ -87,21 +87,126 @@ bool GameLevel::CanAttack(const Craft::Vector2& playerPosition, const Craft::Vec
 
 void GameLevel::CalcSight()
 {
-
+	Bresenham bresenham(map);
+	Vector2 playerFace = GetPlayerFace();
+	Vector2 playerPos = GetPlayerPosition();
+	std::vector<Vector2> sightDirection;
+	// 플레이어 방향에 맞게 시야 거리 끝 세팅
+	if (playerFace.x == 1)
+	{
+		if (playerFace.y == 1)
+		{
+			sightDirection = visibleCirclePointsRightDown;
+		}
+		else if (playerFace.y == -1)
+		{
+			sightDirection = visibleCirclePointsRightUp;
+		}
+		else
+		{
+			sightDirection = visibleCirclePointsRight;
+		}
+	}
+	else if (playerFace.x == -1)
+	{ 
+		if (playerFace.y == 1)
+		{
+			sightDirection = visibleCirclePointsLeftDown;
+		}
+		else if (playerFace.y == -1)
+		{
+			sightDirection = visibleCirclePointsLeftUp;
+		}
+		else
+		{
+			sightDirection = visibleCirclePointsLeft;
+		}
+	}
+	else
+	{
+		if (playerFace.y == 1)
+		{
+			sightDirection = visibleCirclePointsDown;
+		}
+		else 
+		{
+			sightDirection = visibleCirclePointsUp;
+		}
+	}
+	// 시야 내 경로 탐색
+	for (Vector2 path : sightDirection)
+	{
+		Vector2 desti;
+		if (playerPos.x + path.x > 1)
+		{
+			if (playerPos.x + path.x < sightMap[0].size())
+			{
+				desti.x = playerPos.x + path.x;
+			}
+			else
+			{
+				desti.x = sightMap[0].size() - 1;
+			}
+		}
+		else
+		{
+			desti.x = 0;
+		}
+		if (playerPos.y + path.y > 1)
+		{
+			if (playerPos.y + path.y < sightMap.size())
+			{
+				desti.y = playerPos.y + path.y;
+			}
+			else
+			{
+				desti.y = sightMap.size() - 1;
+			}
+		}
+		else
+		{
+			desti.y = 0;
+		}
+		float distance = std::sqrt(
+			std::pow(playerPos.x - desti.x, 2)
+			+ std::pow(playerPos.y - desti.y, 2)
+		);
+		//직선 경로 탐색
+		std::vector<Vector2> bresenhamRoute = bresenham.BresenhamFinder(distance, playerPos, desti);
+		bool isWall = false;
+		for (Vector2 route : bresenhamRoute)
+		{
+			// 첫 벽을 만난 후 벽이 아니라면
+			if (isWall && map[route.y][route.x] == 0)
+			{
+				break;
+			}
+			// 첫 벽을 만난다면
+			if (map[route.y][route.x] == 1)
+			{
+				isWall = true;
+			}
+			sightMap[route.y][route.x].isSight = true;
+		}
+	}
 
 }
 
 void GameLevel::IsTileSighted()
 {
-	int minX = (player->GetPosition().x - 40 > 0) ? player->GetPosition().x - 40 : 0;
-	int maxX = (player->GetPosition().x + 40 > map[0].size()) ? player->GetPosition().x + 40 : map[0].size() - 1;
-	int minY = (player->GetPosition().y - 40 > 0) ? player->GetPosition().y - 40 : 0;
-	int maxY = (player->GetPosition().y + 40 > map.size()) ? player->GetPosition().y + 40 : map.size() - 1;
+	int minX = (player->GetPosition().x - 50 > 0) ? player->GetPosition().x - 50 : 0;
+	int maxX = (player->GetPosition().x + 50 < sightMap[0].size()) ? player->GetPosition().x + 50 : sightMap[0].size() - 1;
+	int minY = (player->GetPosition().y - 50 > 0) ? player->GetPosition().y - 50 : 0;
+	int maxY = (player->GetPosition().y + 50 < sightMap.size()) ? player->GetPosition().y + 50 : sightMap.size() - 1;
 
 	for (int ix = minX; ix < maxX;++ix)
 	{
 		for (int jx = minY; jx < maxY;++jx)
 		{
+			if (sightMap[jx][ix].isSight == true)
+			{
+				sightMap[jx][ix].keepSight = true;
+			}
 			if (	sightMap[jx][ix].keepSight == false)
 			{
 				continue;
@@ -114,6 +219,7 @@ void GameLevel::IsTileSighted()
 				sightMap[jx][ix].isSight,
 				sightMap[jx][ix].keepSight
 			);
+			sightMap[jx][ix].isSight = false;
 		}
 	}
 }
@@ -165,7 +271,7 @@ void GameLevel::SetVisibleCircleVector()
 		{
 			float distance = ix * ix + jx * jx;
 			// 반경 25일 때 기준 
-			if (600 <= distance && distance <= 650)
+			if (553 <= distance && distance <= 650)
 			{
 				float innerProduct = ix;
 				distance = std::sqrt(distance);
@@ -378,26 +484,26 @@ void GameLevel::DropClue(const std::wstring newclue)
 
 void GameLevel::SetTileColor(const char color, sight& sightMap)
 {
-	int data = 0;
+	Color data = Color::Black;
 	// 컬러에 따라 data 매핑
 	switch (color)
 	{ 
-	case 'ⓐ': data = static_cast<int>(TileColor::Black);         break;
-	case 'ⓑ': data = static_cast<int>(TileColor::Blue);		      break;
-	case 'ⓒ': data = static_cast<int>(TileColor::Green);		  break;
-	case 'ⓓ': data = static_cast<int>(TileColor::Cyan);		      break;
-	case 'ⓔ': data = static_cast<int>(TileColor::Red);		      break;
-	case 'ⓕ': data = static_cast<int>(TileColor::Purple);	      break;
-	case 'ⓖ': data = static_cast<int>(TileColor::Yellow);	      break;
-	case 'ⓗ': data = static_cast<int>(TileColor::Gray);		      break;
-	case 'ⓙ': data = static_cast<int>(TileColor::BrightBlack);   break;
-	case 'ⓚ': data = static_cast<int>(TileColor::BrightBlue);    break;
-	case 'ⓛ': data = static_cast<int>(TileColor::BrightGreen);   break;
-	case 'ⓜ': data = static_cast<int>(TileColor::BrightCyan);    break;
-	case 'ⓝ': data = static_cast<int>(TileColor::BrightRed);	  break;
-	case 'ⓞ': data = static_cast<int>(TileColor::BrightPurple);  break;
-	case 'ⓟ': data = static_cast<int>(TileColor::BrightYellow);  break;
-	case 'ⓠ': data = static_cast<int>(TileColor::BrightGray);    break;
+	case L'A': data = Color::bBlack;         break;
+	case L'B': data = Color::bBlue;		    break;
+	case L'C': data = Color::bGreen;		    break;
+	case L'D': data = Color::bCyan;		    break; 
+	case L'E': data = Color::bRed;		    break;
+	case L'F': data = Color::bPurple;	        break;
+	case L'G': data = Color::bYellow;	        break;
+	case L'H': data = Color::bGray;		    break;
+	case L'I': data = Color::bBrightBlack;   break;
+	case L'J': data = Color::bBrightBlue;    break;
+	case L'K': data = Color::bBrightGreen;   break;
+	case L'L': data = Color::bBrightCyan;    break;
+	case L'M': data = Color::bBrightRed;	    break;
+	case L'N': data = Color::bBrightPurple;  break;
+	case L'O': data = Color::bBrightYellow;  break;
+	case L'P' || '#': data = Color::bGray;  break; // 블랙이랑 동일
 	}
 	sightMap.data = data;
 }
@@ -444,7 +550,7 @@ void GameLevel::OnInitialized()
 	Level::OnInitialized();
 
 	//파일을 읽어서 맵 로드
-	LoadMap("map_500x500.txt"); 
+	LoadMap("strange.txt"); 
 
 	//벡터 계산
 	SetVisibleCircleVector();
@@ -536,6 +642,9 @@ void GameLevel::Tick(float deltaTime)
 		2,
 		true
 	);
+
+	// 시야 체크
+	CalcSight();
 
 	// Game에 결과 저장
 	game.SetGameStatus(targetClear, clientClear, isGameOver);
@@ -649,6 +758,10 @@ void GameLevel::LoadMap(const std::string& filename)
 			map.emplace_back();
 			clearMap.emplace_back();
 			continue;
+		}
+		if (mapCharacter == '\0')
+		{
+			break;
 		}
 		sightMap[position.y].emplace_back();
 		SetTileColor(mapCharacter, sightMap[position.y][position.x]);

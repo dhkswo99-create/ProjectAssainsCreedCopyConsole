@@ -262,13 +262,13 @@ namespace Craft
 						frame->charInfoArray[index].Attributes
 							= static_cast<DWORD>(command.color);
 					}
+
 					if (command.isSighted == false
 						&& command.keepSighted == true
-						&& command.sortingOrder == 0)
+						&& command.sortingOrder <= 5)
 					{
 						frame->charInfoArray[index].Attributes
-							= static_cast<DWORD>(command.color)
-							+ BACKGROUND_INTENSITY;
+							= BACKGROUND_INTENSITY;
 					}
 					if (command.image == L"⅓")
 					{

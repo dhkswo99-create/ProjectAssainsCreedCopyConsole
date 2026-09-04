@@ -110,7 +110,7 @@ std::vector<Vector2> Enemy::FindRoute(const Vector2& destination)
 						L"█",
 						Vector2(ix, jx),
 						Color::Gray, 
-						1,
+						6,
 						true
 					);
 				}
@@ -122,7 +122,7 @@ std::vector<Vector2> Enemy::FindRoute(const Vector2& destination)
 				L"⅓",
 				currentPos = currentPos + path,
 				Color::Green,
-				2,
+				6,
 				true
 			);
 		}
@@ -223,7 +223,7 @@ bool Enemy::Searching()
 				L"#",
 				path,
 				Color::White,
-				1, 
+				6, 
 				true
 			);
 		}

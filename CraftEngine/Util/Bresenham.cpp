@@ -159,16 +159,16 @@ std::vector<Vector2> Bresenham::CalcBresenham(const Vector2& startPosition, cons
 	auto LineFunc = [dx, dy, startPosition, currentPosition](const Vector2& sub)
 		{ // 직선으로부터 떨어진 거리 계산
 			return dx * (sub.y - startPosition.y) - dy * (sub.x - startPosition.x);
-		}; //함수포인터로 작선한 의미는 딱히 없음 써보고 싶었음..
+		}; //함수포인터로 작성한 의미는 딱히 없음 써보고 싶었음..
 	while (currentPosition != destination)
 	{
 		if (currentPosition.x > map.size() || currentPosition.y > map[0].size()
-			|| currentPosition.x < 0 || currentPosition.y < 0)
+ 			|| currentPosition.x < 0 || currentPosition.y < 0)
 		{
 			std::vector<Vector2> a;
 			return a;
 		}
-		currentPosition = currentPosition + mainFace; 
+		currentPosition = currentPosition + mainFace;
 		currentPosition = ( // 더 가까운 점 선택
 			std::abs( LineFunc(currentPosition + subFace) ) > std::abs( LineFunc(currentPosition) ) ) 
 			? currentPosition : currentPosition + subFace; 
