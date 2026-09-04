@@ -711,43 +711,43 @@ void Player::DisplayCommand()
 {
 	// 누르는 키 보여주기
 	Renderer::Get().ScreenSubmit( L"Ctrl", Vector2(2, 47), 
-		(Input::Get().GetKey(VK_CONTROL) ? Color::White : Color::Gray),
+		(Input::Get().GetKey(VK_CONTROL) ? Color::Green: Color::Gray),
 		21, true
 	);
 	Renderer::Get().ScreenSubmit( L"A", Vector2(9, 47), 
-		((Input::Get().GetKey('a') || Input::Get().GetKey('A')) ? Color::White : Color::Gray),
+		((Input::Get().GetKey('a') || Input::Get().GetKey('A')) ? Color::Green: Color::Gray),
 		21, true
 	);
 	Renderer::Get().ScreenSubmit( L"W", Vector2(11, 45), 
-		((Input::Get().GetKey('w') || Input::Get().GetKey('W')) ? Color::White : Color::Gray),
+		((Input::Get().GetKey('w') || Input::Get().GetKey('W')) ? Color::Green: Color::Gray),
 		21, true
 	);
 	Renderer::Get().ScreenSubmit( L"S", Vector2(11, 47), 
-		((Input::Get().GetKey('s') || Input::Get().GetKey('S')) ? Color::White : Color::Gray),
+		((Input::Get().GetKey('s') || Input::Get().GetKey('S')) ? Color::Green: Color::Gray),
 		21, true
 	);
 	Renderer::Get().ScreenSubmit( L"D", Vector2(13, 47), 
-		((Input::Get().GetKey('d') || Input::Get().GetKey('D')) ? Color::White : Color::Gray),
+		((Input::Get().GetKey('d') || Input::Get().GetKey('D')) ? Color::Green: Color::Gray),
 		21, true
 	);
 	Renderer::Get().ScreenSubmit( L"SpaceBar", Vector2(16, 47), 
-		(Input::Get().GetKey(VK_SPACE) ? Color::White : Color::Gray),
+		(Input::Get().GetKey(VK_SPACE) ? Color::Green: Color::Gray),
 		21, true
 	);
 	Renderer::Get().ScreenSubmit( L"←", Vector2(26, 47), 
-		(Input::Get().GetKey(VK_LEFT) ? Color::White : Color::Gray),
+		(Input::Get().GetKey(VK_LEFT) ? Color::Green: Color::Gray),
 		21, true
 	);
 	Renderer::Get().ScreenSubmit( L"↑", Vector2(28, 45), 
-		(Input::Get().GetKey(VK_UP) ? Color::White : Color::Gray),
+		(Input::Get().GetKey(VK_UP) ? Color::Green: Color::Gray),
 		21, true
 	);
 	Renderer::Get().ScreenSubmit( L"↓", Vector2(28, 47), 
-		(Input::Get().GetKey(VK_DOWN) ? Color::White : Color::Gray),
+		(Input::Get().GetKey(VK_DOWN) ? Color::Green: Color::Gray),
 		21, true
 	);
 	Renderer::Get().ScreenSubmit( L"→", Vector2(30, 47), 
-		(Input::Get().GetKey(VK_RIGHT) ? Color::White : Color::Gray),
+		(Input::Get().GetKey(VK_RIGHT) ? Color::Green: Color::Gray),
 		21, true
 	);
 }

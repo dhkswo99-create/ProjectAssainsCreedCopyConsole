@@ -207,18 +207,35 @@ void GameLevel::IsTileSighted()
 			{
 				sightMap[jx][ix].keepSight = true;
 			}
-			if (	sightMap[jx][ix].keepSight == false)
+			if (	!GetDebuger() && sightMap[jx][ix].keepSight == false)
 			{
 				continue;
 			}
-			Renderer::Get().Submit(
-				L" ",
-				Vector2(ix, jx),
-				sightMap[jx][ix].data,
-				1,
-				sightMap[jx][ix].isSight,
-				sightMap[jx][ix].keepSight
-			);
+			if (sightMap[jx][ix].image == '#')
+			{
+
+				Renderer::Get().Submit(
+					L"░",
+					Vector2(ix, jx),
+					Color::White,
+					1,
+					(GetDebuger()) ? true :
+					sightMap[jx][ix].isSight,
+					sightMap[jx][ix].keepSight
+				);
+			}
+			else
+			{
+				Renderer::Get().Submit(
+					L" ",
+					Vector2(ix, jx),
+					sightMap[jx][ix].data,
+					1,
+					(GetDebuger()) ? true :
+					sightMap[jx][ix].isSight,
+					sightMap[jx][ix].keepSight
+				);
+			}
 			sightMap[jx][ix].isSight = false;
 		}
 	}
@@ -506,6 +523,7 @@ void GameLevel::SetTileColor(const char color, sight& sightMap)
 	case L'P' || '#': data = Color::bGray;  break; // 블랙이랑 동일
 	}
 	sightMap.data = data;
+	sightMap.image = color;
 }
 
 
@@ -550,7 +568,7 @@ void GameLevel::OnInitialized()
 	Level::OnInitialized();
 
 	//파일을 읽어서 맵 로드
-	LoadMap("strange.txt"); 
+	LoadMap("map_500x500.txt"); 
 
 	//벡터 계산
 	SetVisibleCircleVector();

@@ -57,6 +57,10 @@ public:
 
 
 protected:
+	// 패트롤 변수
+	bool bPatrol = false;
+	int patrolRange = 30;
+
 	//벽이 있는지
 	bool isWall = false;
 

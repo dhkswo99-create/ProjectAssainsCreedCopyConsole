@@ -28,12 +28,13 @@ void Enemy::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
-
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+	map = level->GetMap();
 
 	found = Searching(); // << 얘가 병목 성능이 100 프레임에서 50프로임 아래로 떨어트림
 
 	//생각보다 성능에 영향 안큼
-	if (!found && moveIndex <= 0)
+	if (!found && moveIndex <= 0 && bPatrol)
 	{
 		// 무작위 패트롤
 		if (this->IsTypeOf<Target>()
@@ -41,8 +42,6 @@ void Enemy::Tick(float deltaTime)
 		{
 			return;
 		}
-		std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
-		std::vector<std::vector<int>> map = level->GetMap();
 		AStar patrolFinder;
 		int ran = rand();
 		int ran_1 = ran % 41;
@@ -50,19 +49,20 @@ void Enemy::Tick(float deltaTime)
 		int ran_3 = ran % 111;
 		int ran_4 = ran % 1901;
 		SetMoveSpeed(1.0f);
-		int posX = GetPosition().x
-			+ (ran_1 % 3 - 1) * (ran_2 % 5);
-		int posY = GetPosition().y
-			+ (ran_3 % 3 - 1) * (ran_4 % 5);
-		if (GetPosition().x + posX >= level->GetMap().size()
-			&& 0 >= GetPosition().x + posX)
+		int dx = (ran_1 % 3 - 1) * (ran_2 % 5);
+		int dy = (ran_3 % 3 - 1) * (ran_4 % 5);
+
+		int posX = GetPosition().x + dx;
+		int posY = GetPosition().y + dy;
+		if (posX >= map.size()
+			&& 0 >= posX)
 		{
-			posX = -posX;
+			posX = -dx;
 		}
-		if (GetPosition().y + posY >= level->GetMap().size()
-			&& 0 >= GetPosition().y + posY)
+		if (posY >= map.size()
+			&& 0 >= posY)
 		{
-			posY = -posY;
+			posY = -dy;
 		}
 		patrolFinder.FindPath(GetPosition(), Vector2(posX, posY), map, pathDirection);
 			
@@ -182,6 +182,10 @@ bool Enemy::Searching()
 		* (playerPos.x - myPos.x)
 		+ (playerPos.y - myPos.y)
 		* (playerPos.y - myPos.y));
+	if (distance < patrolRange * patrolRange) 
+	{
+		bPatrol = true;
+	}
 	if (distance > sightRange * sightRange) // 단순 비교
 	{ // 적군이 많아질수록 성능에 유리
 		return false;

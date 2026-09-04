@@ -12,6 +12,7 @@ class GameLevel :public Craft::Level
 public:
 	struct sight
 	{
+		char image = ' ';
 		Color data = Color::Black;
 		bool isSight = false;
 		bool keepSight = false;

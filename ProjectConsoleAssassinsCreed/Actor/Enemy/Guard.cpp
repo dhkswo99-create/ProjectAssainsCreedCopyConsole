@@ -16,7 +16,7 @@ Guard::Guard(const Vector2& position)
 	range = 3;
 	SetSightRange(15.0f);
 	SetMoveSpeed(8.0f);
-	sortingOrder = 3;
+	sortingOrder = 10;
 	castDelay = 0.6f;
 	attackDelay = 0.3f;
 	invincibilityTimer.SetTargetTime(0.2f);

@@ -7,6 +7,6 @@ Wall::Wall(const Vector2& position)
 {
 	//그리기 우선순위 지정
 	SetUseTick(false);
-	sortingOrder = 3;
+	sortingOrder = 6;
 	SetIsSighted(false);
 }

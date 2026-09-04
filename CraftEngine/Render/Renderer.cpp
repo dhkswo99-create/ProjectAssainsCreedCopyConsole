@@ -269,6 +269,13 @@ namespace Craft
 					{
 						frame->charInfoArray[index].Attributes
 							= BACKGROUND_INTENSITY;
+						if (command.image == L"░")
+						{
+							frame->charInfoArray[index].Attributes
+								= FOREGROUND_GREEN
+								+ FOREGROUND_RED
+								+ FOREGROUND_BLUE;
+						}
 					}
 					if (command.image == L"⅓")
 					{
