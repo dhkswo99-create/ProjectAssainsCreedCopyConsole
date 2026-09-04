@@ -71,12 +71,14 @@ namespace Craft
 		void SetPosition(const Vector2& newposition);
 		void SetFace(const Vector2& newFace);
 		void SetColor(const Color newcolor) { this->color = newcolor; }
-
+		
+		void SetUseTick(bool newUseTick) { useTick = newUseTick; }
 		void SetColiisionEnabled(bool iscollisionEnabled)
 		{
 			collisionEnabled = iscollisionEnabled;
 		}
 
+		bool GetUseTick() { return useTick; }
 		bool GetCollisionEnabled() { return collisionEnabled; }
 
 		//이전 위치 반환
@@ -112,6 +114,8 @@ namespace Craft
 		//체력
 		int hp;
 
+
+
 		//시야
 		bool keepSighted;
 		bool isSighted;
@@ -121,6 +125,8 @@ namespace Craft
 		bool collisionEnabled = false;
 		//BeginPlay 생에 한번만 처리
 		bool hasBeganPlay = false;
+		//Tick 사용 여부
+		bool useTick = true;
 		//액터 활성화 여부
 		bool isActive = true;
 		//삭제 요청 여부 플래그.

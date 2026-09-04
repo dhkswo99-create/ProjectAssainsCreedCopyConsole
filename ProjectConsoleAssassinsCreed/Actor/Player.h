@@ -26,6 +26,8 @@ public:
 	virtual void DestroyWeapon() override;
 
 	void SetRange(int newRange) { range = newRange; }
+	int GetSightRange() { return sightRange; }
+	float GetSightAngle() { return sightAngle; }
 	
 	virtual void OnCollision(const std::shared_ptr<Actor>& other) override;
 
@@ -41,6 +43,8 @@ private:
 	std::vector<Craft::Vector2> GetSwordRoute(const int routeIndex) 
 	{ return swordRoute[routeIndex]; }
 private:
+	int sightRange = 25;
+	float sightAngle = 60.0f;
 	//검 궤적 계산 변수
 	int positive90Degree[4] = {0, -1, 1, 0};
 	int positive45Degree[4] = {1, -1, 1, 1};

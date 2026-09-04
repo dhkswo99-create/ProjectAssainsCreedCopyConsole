@@ -9,6 +9,13 @@ class Camera;
 //게임 클리어 등 게임 규칙 및 전반을 관리
 class GameLevel :public Craft::Level
 {
+public:
+	struct sight
+	{
+		Color data = Color::Black;
+		bool isSight = false;
+		bool keepSight = false;
+	};
 
 public:
 	//커스텀 타입 설정
@@ -22,8 +29,10 @@ public:
 		const Craft::Vector2& playerPosition,
 		const Craft::Vector2& dPos
 	);
-
-	void IsSighted();
+	void IsTileSighted();
+	void IsActorSighted();
+	bool InAngle(const float angle, const float sightAngle, const float resultAngle);
+	void SetVisibleCircleVector();
 	void IsntSighted(const std::shared_ptr<Craft::Actor>& actor);
 
 	bool IsWall(const Craft::Vector2& currentPosition);
@@ -42,6 +51,7 @@ public:
 	void ItemOnCollision(const std::wstring DropKey);
 	//단서를 얻었을 때 이벤트
 	void DropClue(const std::wstring newclue);
+	void SetTileColor(const char color, sight& sightMap);
 
 	void ClueGet(bool& getClue)
 	{
@@ -50,6 +60,7 @@ public:
 	void SubmitClue();
 
 private:
+	void CalcSight();
 	void SetDebuger(const bool debuger) { bDebuger = debuger; }
 	void SetCleanViewer(const bool CleanSight) { bCleanSight = CleanSight; }
 	//레벨 초기화 함수
@@ -71,6 +82,17 @@ private:
 	void SetGameStatus();
 
 private:
+	// 원형 상대 좌표 변수
+	std::vector<Vector2> visibleCirclePointsRight;
+	std::vector<Vector2> visibleCirclePointsRightUp;
+	std::vector<Vector2> visibleCirclePointsUp;
+	std::vector<Vector2> visibleCirclePointsLeftUp;
+	std::vector<Vector2> visibleCirclePointsLeft;
+	std::vector<Vector2> visibleCirclePointsLeftDown;
+	std::vector<Vector2> visibleCirclePointsDown;
+	std::vector<Vector2> visibleCirclePointsRightDown;
+
+	// 단서 변수
 	std::wstring clue1;
 	std::wstring clue2;
 	std::wstring clue3;
@@ -92,6 +114,8 @@ private:
 	bool isGameOver = false;
 
 
+	std::vector<std::vector<sight>> sightMap;
+	// 공간을 좀 쓰긴 하는데 계속 쓸 예정
 	std::vector<std::vector<int>> map;
 	std::vector<std::vector<int>> clearMap;
 	std::shared_ptr<Camera> camera;

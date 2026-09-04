@@ -206,7 +206,7 @@ bool Enemy::Searching()
 	{
 		relativeAngle = 0;
 	}
-	// 직선 경로
+	// 직선 경로 
 	std::vector<Vector2> rayDirectionQueue = bresenham.BresenhamFinder(distance, myPos, playerPos);
 
 	if (rayDirection.size() != 0)

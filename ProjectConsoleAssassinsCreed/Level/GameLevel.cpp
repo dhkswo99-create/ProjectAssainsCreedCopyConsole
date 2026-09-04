@@ -85,9 +85,42 @@ bool GameLevel::CanAttack(const Craft::Vector2& playerPosition, const Craft::Vec
 	return false;
 }
 
-void GameLevel::IsSighted()
+void GameLevel::CalcSight()
 {
-	for (const std::shared_ptr<Actor>& actor : actorList)
+
+
+}
+
+void GameLevel::IsTileSighted()
+{
+	int minX = (player->GetPosition().x - 40 > 0) ? player->GetPosition().x - 40 : 0;
+	int maxX = (player->GetPosition().x + 40 > map[0].size()) ? player->GetPosition().x + 40 : map[0].size() - 1;
+	int minY = (player->GetPosition().y - 40 > 0) ? player->GetPosition().y - 40 : 0;
+	int maxY = (player->GetPosition().y + 40 > map.size()) ? player->GetPosition().y + 40 : map.size() - 1;
+
+	for (int ix = minX; ix < maxX;++ix)
+	{
+		for (int jx = minY; jx < maxY;++jx)
+		{
+			if (	sightMap[jx][ix].keepSight == false)
+			{
+				continue;
+			}
+			Renderer::Get().Submit(
+				L" ",
+				Vector2(ix, jx),
+				sightMap[jx][ix].data,
+				1,
+				sightMap[jx][ix].isSight,
+				sightMap[jx][ix].keepSight
+			);
+		}
+	}
+}
+
+void GameLevel::IsActorSighted()
+{
+	for (const std::shared_ptr<Actor>& actor : collisionEnabledActorList)
 	{
 		actor->SetIsSighted(
 			(bCleanSight) ?
@@ -109,6 +142,71 @@ void GameLevel::IsSighted()
 			actor->SetKeepSighted(true);
 		}
 		IsntSighted(actor);
+	}
+}
+
+bool GameLevel::InAngle(const float angle, const float sightAngle, const float resultAngle)
+{
+	// 더 작은 값 사용
+	if ( ( (abs(angle - resultAngle) < 360 - abs(angle - resultAngle))
+		? abs(angle - resultAngle) : 360 - abs(angle - resultAngle)	)	
+		<= sightAngle)
+	{
+		return true;
+	}
+	return false;
+}
+
+void GameLevel::SetVisibleCircleVector()
+{
+	for (int ix = -player->GetSightRange(); ix <= player->GetSightRange(); ++ix)
+	{
+		for (int jx = -player->GetSightRange(); jx <= player->GetSightRange(); ++jx)
+		{
+			float distance = ix * ix + jx * jx;
+			// 반경 25일 때 기준 
+			if (600 <= distance && distance <= 650)
+			{
+				float innerProduct = ix;
+				distance = std::sqrt(distance);
+				// 제곱근 연산 오류 조정
+				if (innerProduct > distance) distance = std::abs(innerProduct);
+				float angle = acos(innerProduct / distance) * 180 / 3.141592 * ((jx) ? - abs(jx) / jx : 1);
+				// 시야각 내라면 저장.
+				
+				if (InAngle(0, player->GetSightAngle(), angle))
+				{
+					visibleCirclePointsRight.emplace_back(Vector2(ix, jx));
+				}
+				if (InAngle(45, player->GetSightAngle(), angle))
+				{
+					visibleCirclePointsRightUp.emplace_back(Vector2(ix, jx));
+				}
+				if (InAngle(90, player->GetSightAngle(), angle))
+					{
+					visibleCirclePointsUp.emplace_back(Vector2(ix, jx));
+				}
+				if (InAngle(135, player->GetSightAngle(), angle))
+					{
+					visibleCirclePointsLeftUp.emplace_back(Vector2(ix, jx));
+				}
+				if (InAngle(180, player->GetSightAngle(), angle))
+					{
+					visibleCirclePointsLeft.emplace_back(Vector2(ix, jx));
+				}
+				if (InAngle(-135, player->GetSightAngle(), angle))
+					{
+					visibleCirclePointsLeftDown.emplace_back(Vector2(ix, jx));
+				}
+				if (InAngle(-90, player->GetSightAngle(), angle))
+					{
+					visibleCirclePointsDown.emplace_back(Vector2(ix, jx));
+				}
+				if (InAngle(-45, player->GetSightAngle(), angle))
+					{
+					visibleCirclePointsRightDown.emplace_back(Vector2(ix, jx));}
+			}
+		}
 	}
 }
 
@@ -278,6 +376,34 @@ void GameLevel::DropClue(const std::wstring newclue)
 	}
 }
 
+void GameLevel::SetTileColor(const char color, sight& sightMap)
+{
+	int data = 0;
+	// 컬러에 따라 data 매핑
+	switch (color)
+	{ 
+	case 'ⓐ': data = static_cast<int>(TileColor::Black);         break;
+	case 'ⓑ': data = static_cast<int>(TileColor::Blue);		      break;
+	case 'ⓒ': data = static_cast<int>(TileColor::Green);		  break;
+	case 'ⓓ': data = static_cast<int>(TileColor::Cyan);		      break;
+	case 'ⓔ': data = static_cast<int>(TileColor::Red);		      break;
+	case 'ⓕ': data = static_cast<int>(TileColor::Purple);	      break;
+	case 'ⓖ': data = static_cast<int>(TileColor::Yellow);	      break;
+	case 'ⓗ': data = static_cast<int>(TileColor::Gray);		      break;
+	case 'ⓙ': data = static_cast<int>(TileColor::BrightBlack);   break;
+	case 'ⓚ': data = static_cast<int>(TileColor::BrightBlue);    break;
+	case 'ⓛ': data = static_cast<int>(TileColor::BrightGreen);   break;
+	case 'ⓜ': data = static_cast<int>(TileColor::BrightCyan);    break;
+	case 'ⓝ': data = static_cast<int>(TileColor::BrightRed);	  break;
+	case 'ⓞ': data = static_cast<int>(TileColor::BrightPurple);  break;
+	case 'ⓟ': data = static_cast<int>(TileColor::BrightYellow);  break;
+	case 'ⓠ': data = static_cast<int>(TileColor::BrightGray);    break;
+	}
+	sightMap.data = data;
+}
+
+
+
 void GameLevel::SubmitClue()
 {
 	if (bGetClue1)
@@ -317,15 +443,17 @@ void GameLevel::OnInitialized()
 	//상위 개체 호출
 	Level::OnInitialized();
 
-
 	//파일을 읽어서 맵 로드
 	LoadMap("map_500x500.txt"); 
 
+	//벡터 계산
+	SetVisibleCircleVector();
 }
 
 void GameLevel::Draw()
 {
-	IsSighted();
+	IsActorSighted();
+	IsTileSighted();
 	Renderer::Get().ScreenSubmit(
 		L"┌────────────────────────────────────────────────┐\n"
 		L"│                                                │\n"
@@ -489,6 +617,8 @@ void GameLevel::LoadMap(const std::string& filename)
 	// 1. 화면에 액터 그리기
 	//문자열에 저장된 값을 접근할 때 사용할 인덱스.
 	int index = 0;
+	sightMap.clear();
+	sightMap.emplace_back();
 	map.clear();
 	map.emplace_back();
 	clearMap.clear();
@@ -515,11 +645,13 @@ void GameLevel::LoadMap(const std::string& filename)
 		{
 			position.x = 0;
 			++position.y;
+			sightMap.emplace_back();
 			map.emplace_back();
 			clearMap.emplace_back();
 			continue;
 		}
-
+		sightMap[position.y].emplace_back();
+		SetTileColor(mapCharacter, sightMap[position.y][position.x]);
 		clearMap.emplace_back(0);
 		if (mapCharacter == '#')
 		{
@@ -758,7 +890,7 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 	{
 		return true;
 	}
-	else if (distance > 25 * 25)
+	else if (distance > player->GetSightRange() * player->GetSightRange())
 	{
 		return false;
 	}
@@ -814,7 +946,7 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 			}
 			if (IsWall(path))
 			{
-				if (!actor->IsTypeOf<Wall>())
+				if (map[path.x][path.y] == 0)
 				{
 					isWall = true;
 					break;

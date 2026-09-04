@@ -1,4 +1,4 @@
-framerate = 60
+framerate = 120
 itemWidth = 50
 itemHeight = 50
 gameWidth = 70

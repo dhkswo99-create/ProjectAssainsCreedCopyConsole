@@ -12,6 +12,8 @@ public:
 	void SetMoveSpeed(float newMoveSpeed) { moveSpeed = newMoveSpeed; }
 	void Move(float deltaTime);
 
+	Craft::Vector2 GetCameraTargetView() const { return cameraTargetView; }
+
 private:
 	virtual void Tick(float deltaTime) override;
 

@@ -8,16 +8,23 @@ namespace Craft
 	//색상을 열거형으로 정의
 	enum class CRAFT_API Color : WORD //ushort type
 	{
-		Black = FOREGROUND_RED - FOREGROUND_RED,
-		Red = FOREGROUND_RED,
-		Green = FOREGROUND_GREEN,
-		Blue = FOREGROUND_BLUE,
-		Brown = Red | Red | Green,
-		Yellow = Red | Green,
-		Cyan = Green | Blue,
-		Purple = Red | Blue,
-		White  = Red | Green | Blue,
-		Gray = FOREGROUND_INTENSITY,
-		BrightWhite = White | FOREGROUND_INTENSITY,
+		// 매핑
+		Black = FOREGROUND_RED - FOREGROUND_RED, //ⓐ
+		Blue = FOREGROUND_BLUE, //ⓑ
+		Green = FOREGROUND_GREEN,	//ⓒ
+		Cyan = Green + Blue,	//ⓓ
+		Red = FOREGROUND_RED,	//ⓔ
+		Purple = Red + Blue,	//ⓕ
+		Yellow = Red + Green,	//ⓖ
+		Gray = Red + Green + Blue,	//ⓗ
+
+		BrightBlack = Black + FOREGROUND_INTENSITY, 	//ⓙ
+		BrightBlue = Blue + FOREGROUND_INTENSITY,	//ⓚ
+		BrightGreen = Green + FOREGROUND_INTENSITY,	//ⓛ
+		BrightCyan = Cyan + FOREGROUND_INTENSITY,	//ⓜ
+		BrightRed = Red + FOREGROUND_INTENSITY,	//ⓝ
+		BrightPurple = Purple + FOREGROUND_INTENSITY,	//ⓞ
+		BrightYellow = Yellow + FOREGROUND_INTENSITY,	//ⓟ
+		BrightGray = Gray + FOREGROUND_INTENSITY,	//ⓠ 	
 	};
 }
