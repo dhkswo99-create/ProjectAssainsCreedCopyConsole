@@ -2,6 +2,7 @@
 
 #define ANGLE 180/3.14
 
+#include <Actor/Enemy/Archer.h>
 #include <Actor/Enemy/Guard.h>
 #include <Actor/Player.h>
 #include <Render/Renderer.h>
@@ -122,12 +123,17 @@ void Arrow::OnCollision(const std::shared_ptr<Actor>& other)
 
 void Arrow::DoAttack(const std::shared_ptr<Actor>& other, int damage)
 {
-	if (other->IsTypeOf<Player>() // 체력 화살의 데미지, 속성 등을 넘기기.
+	if (other->IsTypeOf<Archer>())
+	{
+		return;
+	}
+	if (other->IsTypeOf<Player>()
 		|| other->IsTypeOf<Enemy>()
 		|| other->IsTypeOf<Sword>()
 		)
 	{
 		other->BeAttacked(GetFace(), damage);
+		Destroy();
 	}
 }
 

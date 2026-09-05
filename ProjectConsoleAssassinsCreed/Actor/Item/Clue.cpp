@@ -5,7 +5,7 @@
 Clue::Clue(const Vector2& position)
 	: super(L"i", position, Color::White)
 {
-	sortingOrder = 1;
+	sortingOrder = 10;
 }
 
 Clue::~Clue()
@@ -13,6 +13,13 @@ Clue::~Clue()
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	if (level)
 	{
-		level->DropClue(clue);
+		if (bTarget)
+		{
+			level->DropTargetClue(clue);
+		}
+		else if (bClient)
+		{
+			level->DropClientClue(clue);
+		}
 	}
 }

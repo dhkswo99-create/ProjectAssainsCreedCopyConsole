@@ -73,41 +73,63 @@ void Target::BeAttacked(const Vector2& face, int damage)
 
 void Target::DisplayHp()
 {
-	Renderer::Get().ScreenSubmit( //플레이어 미니맵 처리
-		L"Target HP: ",
-		Vector2(1, 29), // offset 0, 1 -> 세부 조정
+	// 타겟 정보
+	Renderer::Get().ScreenSubmit( 
+		L"Target(",
+		Vector2(1, 42), // offset 0, 1 -> 세부 조정
 		Color::White,
 		21,
 		true
-	);
-	for (int ix = 0; ix < hp / 25; ++ix)
+	); 
+	Renderer::Get().ScreenSubmit( 
+		L"/3)",
+		Vector2(9, 42), // offset 0, 1 -> 세부 조정
+		Color::White,
+		21,
+		true
+	); 
+	// Target (n/3) 
+	if (beBoss)
 	{
-		Renderer::Get().ScreenSubmit( //플레이어 미니맵 처리
-			L"■",
-			Vector2(12 + ix, 29), // offset 0, 1 -> 세부 조정
+		Renderer::Get().ScreenSubmit(
+			L"HP:",
+			Vector2(13, 42), // offset 0, 1 -> 세부 조정
 			Color::White,
 			21,
 			true
 		);
+		for (int ix = 0; ix < hp / 25; ++ix)
+		{
+			Renderer::Get().ScreenSubmit(
+				L"■",
+				Vector2(16 + ix, 42), // offset 0, 1 -> 세부 조정
+				Color::Red,
+				21,
+				true
+			);
+		}
 	}
 }
 
 void Target::MiniMapSubmit()
 {
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
-	Renderer::Get().ScreenSubmit( //플레이어 미니맵 처리
-		L"T",
-		Vector2(static_cast<int>(
-			static_cast<float>(position.x)
-			/ (static_cast<float>(level->GetMap().size()) / 49)),
-			1 + static_cast<int>(
-				static_cast<float>(position.y)
-				/ (static_cast<float>(level->GetMap().size()) / 20))
-		), // offset 0, 1 -> 세부 조정
-		Color::White,
-		20,
-		true
-	);
+	if (level->GetTargetClueCount() == 3)
+	{
+		Renderer::Get().ScreenSubmit( //플레이어 미니맵 처리
+			L"T",
+			Vector2(static_cast<int>(
+				static_cast<float>(position.x)
+				/ (static_cast<float>(level->GetMap().size()) / 49)),
+				1 + static_cast<int>(
+					static_cast<float>(position.y)
+					/ (static_cast<float>(level->GetMap().size()) / 20))
+			), // offset 0, 1 -> 세부 조정
+			Color::White,
+			20,
+			true
+		);
+	}
 }
 
 void Target::Tick(float deltaTime)
@@ -131,9 +153,9 @@ void Target::Tick(float deltaTime)
 		pathDirection = FindRoute(level->GetPlayerPosition());
 	}
 	MiniMapSubmit();
+	DisplayHp();
 	if (beBoss)
 	{
-		DisplayHp();
 		patternDelay.Tick(deltaTime);
 		if (!patternDelay.IsTimeOut())
 		{

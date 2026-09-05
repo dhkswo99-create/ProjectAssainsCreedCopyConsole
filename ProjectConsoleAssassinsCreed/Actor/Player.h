@@ -42,6 +42,9 @@ private:
 	bool CalcThirdSwordRoute(const Craft::Vector2& face, const Craft::Vector2& position);
 	std::vector<Craft::Vector2> GetSwordRoute(const int routeIndex) 
 	{ return swordRoute[routeIndex]; }
+
+
+	void DisplayHp();
 private:
 	int sightRange = 25;
 	float sightAngle = 60.0f;

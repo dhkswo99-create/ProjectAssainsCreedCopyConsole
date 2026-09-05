@@ -59,7 +59,7 @@ public:
 protected:
 	// 패트롤 변수
 	bool bPatrol = false;
-	int patrolRange = 30;
+	int patrolRange = 50;
 
 	//벽이 있는지
 	bool isWall = false;
@@ -73,7 +73,7 @@ protected:
 	int range = 7;
 	//시야반경
 	float sightRange = 10;
-	double sightDegree = 45; //45도
+	double sightDegree = 50; //50도
 	//이동속도
 	float moveSpeed = 3.0f;
 	//플레이어와의 거리

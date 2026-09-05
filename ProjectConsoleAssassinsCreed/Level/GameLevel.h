@@ -32,12 +32,15 @@ public:
 	);
 	void IsTileSighted();
 	void IsActorSighted();
+	void IsBossInfo();
 	bool InAngle(const float angle, const float sightAngle, const float resultAngle);
 	void SetVisibleCircleVector();
 	void IsntSighted(const std::shared_ptr<Craft::Actor>& actor);
 
 	bool IsWall(const Craft::Vector2& currentPosition);
 	bool GetDebuger() { return bDebuger; }
+	int GetTargetClueCount() { return targetClueCount; }
+	int GetClientClueCount() { return clientClueCount; }
 	
 	std::vector<Craft::Vector2> RayDirectionQueueInsertGL(const Craft::Vector2& actorPosition);
 	Craft::Vector2 FacingDirectionGL(const Craft::Vector2& currentPos, const Craft::Vector2& actorPosition);
@@ -51,7 +54,8 @@ public:
 	//아이템 충돌 이벤트 Press F 출력
 	void ItemOnCollision(const std::wstring DropKey);
 	//단서를 얻었을 때 이벤트
-	void DropClue(const std::wstring newclue);
+	void DropTargetClue(const std::wstring newclue);
+	void DropClientClue(const std::wstring newclue);
 	void SetTileColor(const char color, sight& sightMap);
 
 	void ClueGet(bool& getClue)
@@ -61,6 +65,8 @@ public:
 	void SubmitClue();
 
 private:
+	void SpawnActors();
+	void SpawnClue(const std::string kindOfClue, const Vector2& position);
 	void CalcSight();
 	void SetDebuger(const bool debuger) { bDebuger = debuger; }
 	void SetCleanViewer(const bool CleanSight) { bCleanSight = CleanSight; }
@@ -94,12 +100,21 @@ private:
 	std::vector<Vector2> visibleCirclePointsRightDown;
 
 	// 단서 변수
-	std::wstring clue1;
-	std::wstring clue2;
-	std::wstring clue3;
-	bool bGetClue1 = false;
-	bool bGetClue2 = false;
-	bool bGetClue3 = false;
+	std::wstring targetClue1;
+	std::wstring targetClue2;
+	std::wstring targetClue3;
+	std::wstring clientClue1;
+	std::wstring clientClue2;
+	std::wstring clientClue3;
+	bool bGetTargetClue1 = false;
+	bool bGetTargetClue2 = false;
+	bool bGetTargetClue3 = false;
+	bool bGetClientClue1 = false;
+	bool bGetClientClue2 = false;
+	bool bGetClientClue3 = false;
+	int targetClueCount = 0;
+	int clientClueCount = 0;
+
 
 
 	//토글처리

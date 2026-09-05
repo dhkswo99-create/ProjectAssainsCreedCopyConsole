@@ -30,19 +30,19 @@ namespace Craft
 		bBlack = BACKGROUND_RED - BACKGROUND_RED, //ⓐ
 		bBlue = BACKGROUND_BLUE, //ⓑ
 		bGreen = BACKGROUND_GREEN,	//ⓒ
-		bCyan = Green + Blue,	//ⓓ
+		bCyan = bGreen + bBlue,	//ⓓ
 		bRed = BACKGROUND_RED,	//ⓔ
-		bPurple = Red + Blue,	//ⓕ
-		bYellow = Red + Green,	//ⓖ
-		bGray = Red + Green + Blue,	//ⓗ
+		bPurple = bRed + bBlue,	//ⓕ
+		bYellow = bRed + bGreen,	//ⓖ
+		bGray = bRed + bGreen + bBlue,	//ⓗ
 
-		bBrightBlack = Black + BACKGROUND_INTENSITY, 	//ⓙ
-		bBrightBlue = Blue + BACKGROUND_INTENSITY,	//ⓚ
-		bBrightGreen = Green + BACKGROUND_INTENSITY,	//ⓛ
-		bBrightCyan = Cyan + BACKGROUND_INTENSITY,	//ⓜ
-		bBrightRed = Red + BACKGROUND_INTENSITY,	//ⓝ
-		bBrightPurple = Purple + BACKGROUND_INTENSITY,	//ⓞ
-		bBrightYellow = Yellow + BACKGROUND_INTENSITY,	//ⓟ
-		bWhite = Gray + BACKGROUND_INTENSITY,	//ⓠ 	
+		bBrightBlack = bBlack + BACKGROUND_INTENSITY, 	//ⓙ
+		bBrightBlue = bBlue + BACKGROUND_INTENSITY,	//ⓚ
+		bBrightGreen = bGreen + BACKGROUND_INTENSITY,	//ⓛ
+		bBrightCyan = bCyan + BACKGROUND_INTENSITY,	//ⓜ
+		bBrightRed = bRed + BACKGROUND_INTENSITY,	//ⓝ
+		bBrightPurple = bPurple + BACKGROUND_INTENSITY,	//ⓞ
+		bBrightYellow = bYellow + BACKGROUND_INTENSITY,	//ⓟ
+		bWhite = bGray + BACKGROUND_INTENSITY,	//ⓠ 	
 	};
 }

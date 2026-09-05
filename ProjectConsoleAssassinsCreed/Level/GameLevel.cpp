@@ -17,6 +17,8 @@
 
 #include <iostream>
 #include <cassert>
+#include <random>
+#include <ctime>
 
 #define ANGLE 180/3.14
 
@@ -83,6 +85,132 @@ bool GameLevel::CanAttack(const Craft::Vector2& playerPosition, const Craft::Vec
 		return true;
 	}
 	return false;
+}
+
+void GameLevel::SpawnActors()
+{
+	// 플레이어 생성 구문 (중복 생성XX)
+	player = SpawnActor<Player>(Vector2(68, 23));
+	// 카메라 생성 구문 (중복 생성XX)
+	camera = SpawnActor<Camera>();
+
+	// 보스 생성
+	SpawnActor<Client>(Vector2(269, 31));
+	SpawnActor<Target>(Vector2(31, 269));
+
+	// 단서 생성 -> 단서 생성 위치 고정 
+	SpawnClue("Cclue_1.txt", Vector2(39, 23));
+	SpawnClue("Cclue_2.txt", Vector2(238, 18));
+	SpawnClue("Cclue_3.txt", Vector2(33, 168));
+	SpawnClue("Tclue_1.txt", Vector2(47, 39));
+	SpawnClue("Tclue_2.txt", Vector2(151, 141));
+	SpawnClue("Tclue_3.txt", Vector2(257, 97));
+
+	// 튜토리얼 객체
+	SpawnActor<Guard>(Vector2(34, 22));
+	SpawnActor<Archer>(Vector2(49, 39));
+	SpawnActor<Archer>(Vector2(73, 54));
+	SpawnActor<Guard>(Vector2(32, 65));
+	SpawnActor<Guard>(Vector2(40, 65));
+
+
+	// 객체 자동 생성
+	srand(time(nullptr));
+	int startX = 12;
+	int startY = 12;
+	int endX = 288;
+	int endY = 288;
+	int actorCount = 0;
+	while (actorCount <= 100)
+	{
+		int ranX = rand() % 276 + 12;
+		int ranY = rand() % 276 + 12;
+
+		if (map[ranY][ranX] == 1
+			|| ( ranX < 75 && ranY < 70 ))
+		{
+			continue;
+		}
+
+		if ((ranX + ranY) % 2 == 0)
+		{
+			SpawnActor<Guard>(Vector2(ranX, ranY));
+			++actorCount;
+		}
+		else
+		{
+			SpawnActor<Archer>(Vector2(ranX, ranY));
+			++actorCount;
+		}
+	}
+}
+
+void GameLevel::SpawnClue(const std::string kindOfClue, const Vector2& position)
+{
+	std::string cluePath;
+	std::shared_ptr<Clue> clueActor;
+	long clueFileSize = 0;
+	FILE* clueFile = nullptr;
+	char* clueBuffer = nullptr;
+	size_t clueReadSize = 0;
+	int clueIndex = 0;
+	std::wstring newClue;
+
+	// 객체 생성
+	clueActor = SpawnActor<Clue>(position);
+
+	//최종 경로 조립
+	cluePath = std::string("../Assets/") + kindOfClue;
+
+	//파일 열기
+	fopen_s(&clueFile, cluePath.c_str(), "rt");
+	if (!clueFile)
+	{
+		assert(false && "failed to open a Item file.");
+		return;
+	}
+
+	// 파일의 내용을 저장할 버퍼(데이터 저장 공간)
+	// 파일 길이 확인 -> 파일 위치를 제일 뒤로 이동 시킨 뒤 값 읽기.
+	fseek(clueFile, 0, SEEK_END);
+	clueFileSize = ftell(clueFile);
+
+	// 파일 제일 끝 위치를  구한 다음에는 다시 처음으로 되돌리기
+	//fseek(file, 0, SEEK_END);
+	rewind(clueFile);
+
+	// 구한 위치를 사용해서 버퍼 생성
+	clueBuffer = new char[clueFileSize] {};
+
+	//데이터 읽기
+	clueReadSize = fread(clueBuffer, sizeof(char), clueFileSize, clueFile);
+	assert(clueReadSize > 0 && "No data in the Item file.");
+
+	clueIndex = 0;
+	newClue;
+	while (true)
+	{
+		if (clueIndex >= clueFileSize)
+		{
+			break;
+		}
+		newClue.push_back(clueBuffer[clueIndex]);
+		++clueIndex;
+	}
+	clueActor->SetClue(newClue);
+	if (newClue[0] == 'T')
+	{
+		clueActor->SetTarget(true);
+	}
+	else if (newClue[0] == 'C')
+	{
+		clueActor->SetClient(true);
+	}
+
+	delete[] clueBuffer;
+	clueBuffer = nullptr;
+	fclose(clueFile);
+	clueFile = nullptr;
 }
 
 void GameLevel::CalcSight()
@@ -266,6 +394,24 @@ void GameLevel::IsActorSighted()
 		}
 		IsntSighted(actor);
 	}
+}
+
+void GameLevel::IsBossInfo()
+{
+	Renderer::Get().ScreenSubmit(
+		std::to_wstring(targetClueCount),
+		Vector2(8, 42),
+		Color::White,
+		21,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		std::to_wstring(clientClueCount),
+		Vector2(8, 41),
+		Color::White,
+		21,
+		true
+	);
 }
 
 bool GameLevel::InAngle(const float angle, const float sightAngle, const float resultAngle)
@@ -476,22 +622,48 @@ void GameLevel::ItemOnCollision(const std::wstring DropKey)
 	);
 }
 
-void GameLevel::DropClue(const std::wstring newclue)
+void GameLevel::DropTargetClue(const std::wstring newclue)
 {
-	if (clue1.size() == 0)
+	++targetClueCount;
+	if (targetClue1.size() == 0)
 	{
-		clue1 = newclue;
-		ClueGet(bGetClue1);
+		targetClue1 = newclue;
+		ClueGet(bGetTargetClue1);
 	}
-	else if (clue2.size() == 0)
+	else if (targetClue2.size() == 0)
 	{
-		clue2 = newclue;
-		ClueGet(bGetClue2);
+		targetClue2 = newclue;
+		ClueGet(bGetTargetClue2);
 	}
-	else if (clue3.size() == 0)
+	else if (targetClue3.size() == 0)
 	{
-		clue3 = newclue;
-		ClueGet(bGetClue3);
+		targetClue3 = newclue;
+		ClueGet(bGetTargetClue3);
+	}
+	else
+	{
+		return;//일단은 최대 단서 갯수 3개
+	}
+}
+
+void GameLevel::DropClientClue(const std::wstring newclue)
+{
+	++clientClueCount;
+	if (clientClue1.size() == 0)
+	{
+		clientClue1 = newclue;
+		ClueGet(bGetClientClue1);
+	}
+	else if (clientClue2.size() == 0)
+	{
+		clientClue2 = newclue;
+		ClueGet(bGetClientClue2);
+	}
+	else if (clientClue3.size() == 0)
+	{
+		clientClue3 = newclue;
+		ClueGet(bGetClientClue3);
+
 	}
 	else
 	{
@@ -526,35 +698,63 @@ void GameLevel::SetTileColor(const char color, sight& sightMap)
 	sightMap.image = color;
 }
 
-
-
 void GameLevel::SubmitClue()
 {
-	if (bGetClue1)
+	if (bGetTargetClue1)
 	{
 		Renderer::Get().ScreenSubmit(
-			clue1,
+			targetClue1,
 			Vector2(3, 26),
 			Color::White,
 			2,
 			true
 		);
 	}
-	if (bGetClue2)
+	if (bGetTargetClue2)
 	{
 		Renderer::Get().ScreenSubmit(
-			clue2,
+			targetClue2,
 			Vector2(3, 27),
 			Color::White,
 			2,
 			true
 		);
 	}
-	if (bGetClue3)
+	if (bGetTargetClue3)
 	{
 		Renderer::Get().ScreenSubmit(
-			clue3,
+			targetClue3,
 			Vector2(3, 28),
+			Color::White,
+			2,
+			true
+		);
+	}
+	if (bGetClientClue1)
+	{
+		Renderer::Get().ScreenSubmit(
+			clientClue1,
+			Vector2(3, 29),
+			Color::White,
+			2,
+			true
+		);
+	}
+	if (bGetClientClue2)
+	{
+		Renderer::Get().ScreenSubmit(
+			clientClue2,
+			Vector2(3, 30),
+			Color::White,
+			2,
+			true
+		);
+	}
+	if (bGetClientClue3)
+	{
+		Renderer::Get().ScreenSubmit(
+			clientClue3,
+			Vector2(3, 31),
 			Color::White,
 			2,
 			true
@@ -568,7 +768,10 @@ void GameLevel::OnInitialized()
 	Level::OnInitialized();
 
 	//파일을 읽어서 맵 로드
-	LoadMap("map_500x500.txt"); 
+	LoadMap("ColorfulMap.txt"); 
+
+	// 객체 생성 함수
+	SpawnActors();
 
 	//벡터 계산
 	SetVisibleCircleVector();
@@ -578,6 +781,7 @@ void GameLevel::Draw()
 {
 	IsActorSighted();
 	IsTileSighted();
+	IsBossInfo();
 	Renderer::Get().ScreenSubmit(
 		L"┌────────────────────────────────────────────────┐\n"
 		L"│                                                │\n"
@@ -756,6 +960,10 @@ void GameLevel::LoadMap(const std::string& filename)
 	Vector2 position = Vector2::Zero;
 	while (true)
 	{
+		if (position.y == 297 && position.x > 299)
+		{
+			break;
+		}
 		//종료 조건 모두 읽었는지 파악
 		if (index >= fileSize)
 		{
@@ -781,131 +989,21 @@ void GameLevel::LoadMap(const std::string& filename)
 		{
 			break;
 		}
+		
 		sightMap[position.y].emplace_back();
 		SetTileColor(mapCharacter, sightMap[position.y][position.x]);
 		clearMap.emplace_back(0);
 		if (mapCharacter == '#')
 		{
 			map[position.y].emplace_back(1);
+			SpawnActor<Wall>(position);
 		}
 		else
 		{
 			map[position.y].emplace_back(0);
 		}
-		std::string cluePath;
-		std::shared_ptr<Clue> clueActor;
-		long clueFileSize = 0;
-		FILE* clueFile = nullptr;
-		char* clueBuffer = nullptr;
-		size_t clueReadSize = 0;
-		int clueIndex = 0;
-		std::wstring newClue;
-		////읽은 문자별로 처리.
-		switch (mapCharacter)
-		{
-		case 'i':
-			clueActor = SpawnActor<Clue>(position);
-			//최종 경로 조립
-			switch (clueCount)
-			{
-			case 0:
-				cluePath = std::string("../Assets/") + "clue_1.txt";
-				++clueCount;
-				break;
-			case 1:
-				cluePath = std::string("../Assets/") + "clue_2.txt";
-				++clueCount;
-				break;
-			case 2:
-				cluePath = std::string("../Assets/") + "clue_3.txt";
-				break;
-			}
-
-			//파일 열기
-			fopen_s(&clueFile, cluePath.c_str(), "rt");
-			if (!clueFile)
-			{
-				assert(false && "failed to open a Item file.");
-				return;
-			}
-
-			// 파일의 내용을 저장할 버퍼(데이터 저장 공간)
-			// 파일 길이 확인 -> 파일 위치를 제일 뒤로 이동 시킨 뒤 값 읽기.
-			fseek(clueFile, 0, SEEK_END);
-			clueFileSize = ftell(clueFile);
-
-			// 파일 제일 끝 위치를  구한 다음에는 다시 처음으로 되돌리기
-			//fseek(file, 0, SEEK_END);
-			rewind(clueFile);
-
-			// 구한 위치를 사용해서 버퍼 생성
-			clueBuffer = new char[clueFileSize] {};
-
-			//데이터 읽기
-			clueReadSize = fread(clueBuffer, sizeof(char), clueFileSize, clueFile);
-			assert(clueReadSize > 0 && "No data in the Item file.");
-
-			clueIndex = 0;
-			newClue;
-			while (true)
-			{
-				if (clueIndex >= clueFileSize)
-				{
-					break;
-				}
-				newClue.push_back(clueBuffer[clueIndex]);
-				++clueIndex;
-			}
-			clueActor->SetClue(newClue);
-
-
-			delete[] clueBuffer;
-			clueBuffer = nullptr;
-			fclose(clueFile);
-			clueFile = nullptr;
-
-			break;
-		case '#': //벽
-			SpawnActor<Wall>(position);
-			break;
-		case '.': //땅
-			//SpawnActor<Ground>(position);
-			break;
-		case 'g': //경비
-			SpawnActor<Guard>(position);
-			//SpawnActor<Ground>(position);
-			break;
-		case 'a': //궁수
-			SpawnActor<Archer>(position);
-			//SpawnActor<Ground>(position);
-			break;
-		case 't': // 타겟
-			SpawnActor<Target>(position);
-			//SpawnActor<Ground>(position);
-			break;
-		case 'c': // 의뢰인
-			SpawnActor<Client>(position);
-			//SpawnActor<Ground>(position);
-			break;
-		case 'p': //플레이어
-			//SpawnActor<Ground>(position); //플레이어가 이동한 후에 바닥 
-			camera = SpawnActor<Camera>();
-			player = SpawnActor<Player>(position);
-			break;
-		}
-
 		//x위치 업데이트
 		++position.x;
-		if (clueBuffer != nullptr)
-		{
-			delete[] clueBuffer;
-			clueBuffer = nullptr;
-		}
-		if (clueFile != nullptr)
-		{
-			fclose(clueFile);
-			clueFile = nullptr;
-		}
 	}
 
 

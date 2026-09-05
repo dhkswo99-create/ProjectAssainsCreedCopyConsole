@@ -41,6 +41,7 @@ void Player::Tick(float deltaTime)
 
 	MiniMapSubmit();
 	DisplayCommand();
+	DisplayHp();
 
 	//프레임 관련 문자열
 	const int size = 256;
@@ -688,6 +689,29 @@ bool Player::CalcThirdSwordRoute(const Craft::Vector2& face, const Craft::Vector
 
 
 	return true;
+}
+
+void Player::DisplayHp()
+{
+	{
+		Renderer::Get().ScreenSubmit( //플레이어 미니맵 처리
+			L"Player      HP: ",
+			Vector2(1, 43), // offset 0, 1 -> 세부 조정
+			Color::White,
+			21,
+			true
+		);
+		for (int ix = 0; ix < hp / 5; ++ix)
+		{
+			Renderer::Get().ScreenSubmit( //플레이어 미니맵 처리
+				L"■",
+				Vector2(16 + ix, 43), // offset 0, 1 -> 세부 조정
+				Color::Red,
+				21,
+				true
+			);
+		}
+	}
 }
 
 void Player::MiniMapSubmit()

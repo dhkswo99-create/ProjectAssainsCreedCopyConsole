@@ -16,6 +16,15 @@ public:
 		clue = newClue;
 	}
 
+	void SetTarget(bool kindOfClue)
+	{
+		bTarget = kindOfClue;
+	}
+	void SetClient(bool kindOfClue)
+	{
+		bClient = kindOfClue;
+	}
+
 	std::wstring GetClue() { return clue; }
 
 
@@ -25,5 +34,8 @@ private:
 
 private:
 	std::wstring clue;
+	
+	bool bTarget = false;
+	bool bClient = false;
 };
 

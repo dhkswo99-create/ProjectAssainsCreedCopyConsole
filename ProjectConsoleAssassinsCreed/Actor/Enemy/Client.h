@@ -15,6 +15,7 @@ public:
 	~Client();
 
 	void MiniMapSubmit();
+	void DisplayHp();
 
 
 

@@ -83,7 +83,7 @@ bool AStar::FindPath(
     while (!openList.empty())
     {
         // openList에서 fCost가 가장 작은 노드를 선택.
-        // 이진힙(heap)을 사용하면 최적화 가능.
+        // 이진힙(heap)을 사용하여 팝 후 소팅하는 log n 시간 소요 -> 원래는 완전 탐색으로 최대 n 시간 소요
         Node* currentNode = popHeap(openList);
 
         // 목표 노드인지 확인.

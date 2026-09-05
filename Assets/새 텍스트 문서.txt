@@ -1,4 +1,0 @@
-Sokoban Game
-
-Resume Game
-Exit Gamedkat

@@ -164,5 +164,5 @@ void Archer::WillAttack()
 
 void Archer::FacePlayer()
 {
-	face = FacingDirection(GetPosition());
+	SetFace(FacingDirection(GetPosition()));
 }
