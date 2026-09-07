@@ -97,6 +97,14 @@ namespace Craft
 			//다음 순번을 처리하기 위해 이터레이터(반복자, 포인터) 증가 처리.
 			++iterator;
 		}
+		if (playerActor)
+		{
+ 			if (playerActor->HasExpired())
+			{
+				playerActor = nullptr;
+			}
+		}
+
 		//추가 처리
 		//추가요청된 목록이 없으면 종료
 		if (addRequestedActorList.empty())
@@ -113,6 +121,10 @@ namespace Craft
 			if (actor->GetUseTick())
 			{
 				useTickActorList.emplace_back(actor);
+			}
+			if (actor->GetbPlayer())
+			{
+				playerActor = actor;
 			}
 		}
 		//추가 처리된 목록 정리

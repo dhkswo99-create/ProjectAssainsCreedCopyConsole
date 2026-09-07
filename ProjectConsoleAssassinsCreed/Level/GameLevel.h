@@ -30,22 +30,27 @@ public:
 		const Craft::Vector2& playerPosition,
 		const Craft::Vector2& dPos
 	);
+	//보스
+	void IsBossInfo();
+	// 시야 관련
 	void IsTileSighted();
 	void IsActorSighted();
-	void IsBossInfo();
 	bool InAngle(const float angle, const float sightAngle, const float resultAngle);
 	void SetVisibleCircleVector();
 	void IsntSighted(const std::shared_ptr<Craft::Actor>& actor);
-
+	//벽
 	bool IsWall(const Craft::Vector2& currentPosition);
 	bool GetDebuger() { return bDebuger; }
+	// 단서 갯수 
 	int GetTargetClueCount() { return targetClueCount; }
 	int GetClientClueCount() { return clientClueCount; }
 	
+	// 직선 찾기
 	std::vector<Craft::Vector2> RayDirectionQueueInsertGL(const Craft::Vector2& actorPosition);
 	Craft::Vector2 FacingDirectionGL(const Craft::Vector2& currentPos, const Craft::Vector2& actorPosition);
 	bool SearchingActorGL(const std::shared_ptr<Craft::Actor>& actor);
 
+	// 게터
 	Craft::Vector2 GetPlayerPosition() const { return player->GetPosition(); }
 	Craft::Vector2 GetPlayerFace() const { return player->GetFace(); }
 	std::vector<std::vector<int>> GetMap() { return map; }
@@ -64,12 +69,23 @@ public:
 	}
 	void SubmitClue();
 
+	// 보스룸 작업 함수
+	void TargetBoss();
+	void ClientBoss();
+
 private:
+	// 미니맵 디스플레이
+	void MiniMap();
+
+	// 도움말 디스플레이
+	void ToolTipDisplay() const;
+	// 객체 생성 함수
 	void SpawnActors();
 	void SpawnClue(const std::string kindOfClue, const Vector2& position);
 	void CalcSight();
 	void SetDebuger(const bool debuger) { bDebuger = debuger; }
 	void SetCleanViewer(const bool CleanSight) { bCleanSight = CleanSight; }
+	void SetTip(const bool tip) { bTip = tip; }
 	//레벨 초기화 함수
 	virtual void OnInitialized() override;
 
@@ -120,8 +136,10 @@ private:
 	//토글처리
 	int debugerTrigger = 0;
 	int cleanSightTrigger = 0;
+	int TipTrigger = 0;
 	bool bDebuger = false;
 	bool bCleanSight = false;
+	bool bTip = false;
 
 
 	bool targetClear = false;

@@ -1,6 +1,7 @@
 ﻿#include "Target.h"
 
 #include <Render/Renderer.h>
+#include <Actor/Wall.h>
 #include <random>
 
 
@@ -9,17 +10,19 @@ Target::Target(const Vector2& position)
 	: super(L"T", position, Color::White)
 {
 	hp = 500;
-	sortingOrder = 3;
+	sortingOrder = 16;
 	sightDegree = 40;
 	sightRange = 15;
 	range = 10;
 	moveSpeed = 20.f;
 	patternDelay.SetTargetTime(1.0f);
 	invincibilityTimer.SetTargetTime(0.2f);
+	SetFace(Vector2(0, 1));
 	for (int ix = 0; ix < range; ++ix)
 	{
 		swordRoute.emplace_back();
 	}
+	groggyDelay.SetTargetTime(0);
 	// 충돌 가능 객체
 	SetColiisionEnabled(true);
 }
@@ -29,14 +32,31 @@ Target::~Target()
 	isDead = true;
 }
 
+void Target::beAssassinated(const int damage)
+{
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+	if (!beBoss)
+	{
+		beBoss = true;
+		sightRange = 50;
+		sightDegree = 180;
+		level->TargetBoss();
+	}
+	Groggy(30);
+	super::beAssassinated(damage);
+}
+
 void Target::DestroyWeapon()
 {
 	swordSet.clear();
 	doAttack = false;
+	groggy -= 25;
+
 }
 
 void Target::BeAttacked(const Vector2& face, int damage)
 {
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	// 무적시간
 	if (!invincibilityTimer.IsTimeOut())
 	{
@@ -45,16 +65,19 @@ void Target::BeAttacked(const Vector2& face, int damage)
 	if (!beBoss)
 	{
 		beBoss = true;
+		sightRange = 50;
+		sightDegree = 180;
+		level->TargetBoss();
 	}
 
 	// 체력 감소
 	this->hp -= damage;
+	Groggy(10);
 	if (isGroggy)
 	{
 		this->hp -= damage;
 	}	
 	// 넉백 
-	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	if (level->CanMove(GetPosition() + face))
 	{
 		SetPosition(GetPosition() + face);
@@ -91,6 +114,16 @@ void Target::DisplayHp()
 	// Target (n/3) 
 	if (beBoss)
 	{
+		for (int ix = 20; ix < 20 + groggy / 10; ++ix)
+		{
+			Renderer::Get().ScreenSubmit(
+				L"■",
+				Vector2(ix, 22),
+				Color::BrightYellow,
+				10,
+				true
+			);
+		}
 		Renderer::Get().ScreenSubmit(
 			L"HP:",
 			Vector2(13, 42), // offset 0, 1 -> 세부 조정
@@ -137,7 +170,36 @@ void Target::Tick(float deltaTime)
 	super::Tick(deltaTime);
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 
+	MiniMapSubmit();
+	DisplayHp();
+	groggyDelay.Tick(deltaTime);
 	invincibilityTimer.Tick(deltaTime);
+	for (std::vector<Vector2> routeList : swordRoute)
+	{
+		for (Vector2 route : routeList)
+		{
+			Renderer::Get().Submit(
+				L" ",
+				route,
+				Color::bRed,
+				13,
+				true
+			);
+		}
+	}
+	//그로기
+	if (!groggyDelay.IsTimeOut())
+	{
+		this->image = L"G";
+		isGroggy = true;
+		return;
+	}
+	if (this->image == L"G" && groggyDelay.IsTimeOut())
+	{
+		isGroggy = false;
+		groggy = 100;
+	}
+	// 찾았는데 보스전 시작 안함
 	if (found && !beBoss)
 	{
 		bossTimer.Tick(deltaTime);
@@ -145,15 +207,16 @@ void Target::Tick(float deltaTime)
 		sightRange = 50;
 		sightDegree = 180;
 		// todo 보스 룸을 고립되게 만들 벽 객체 생성
+		level->TargetBoss();
 	}
+	//찾았는데 공격중이 아닐 때
 	if (found && !doAttack)
 	{
 		SetFace(FacingDirection(GetPosition()));
 		pathDirection.clear();
 		pathDirection = FindRoute(level->GetPlayerPosition());
 	}
-	MiniMapSubmit();
-	DisplayHp();
+	// 보스전 시작
 	if (beBoss)
 	{
 		patternDelay.Tick(deltaTime);
@@ -235,7 +298,7 @@ void Target::Tick(float deltaTime)
 			{
 				if (!bDoSecondAttack)
 				{
-					for (int ix = 1; ix <= 4; ++ix)
+					for (int ix = 1; swordRoute[ix].size(); ++ix)
 					{
 						if (!InsertSwordRoute(level, swordRoute[ix], face * (ix % 3))) return;
 					}
@@ -293,7 +356,7 @@ void Target::Attack(std::vector<int>& damage)
 	Vector2 currentPos = GetPosition();
 	if (owner)
 	{
-		for (int ix = 0; ix < 4; ++ix)
+		for (int ix = 0; swordRoute[ix].size(); ++ix)
 		{
 			swordSet.emplace_back(
 				owner->SpawnActor<Sword>(GetPosition(), swordRoute[ix], weak_from_this(), damage[ix])
@@ -302,6 +365,16 @@ void Target::Attack(std::vector<int>& damage)
 		}
 	}
 	damage.clear();
+}
+
+void Target::Groggy(const int gage)
+{
+	groggy -= gage;
+	if (groggy <= 0)
+	{
+		groggyDelay.SetTargetTime(5.f);
+		groggyDelay.Reset();
+	}
 }
 
 Vector2 Target::CalMatrix(const Vector2& face, int matrix0, int matrix1, int matrix2, int matrix3)

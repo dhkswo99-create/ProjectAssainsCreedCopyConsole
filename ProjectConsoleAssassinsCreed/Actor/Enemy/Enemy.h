@@ -55,8 +55,13 @@ public:
 	void SetRelativeAngle(float newRelativeAngle) { relativeAngle = newRelativeAngle; }
 	void SetMoveSpeed(float newMoveSpeed) { moveSpeed = newMoveSpeed; }
 
+	// 암살당하는 함수
+	virtual void beAssassinated(const int damage) override;
+	virtual void OnCollision(const std::shared_ptr<Actor>& other) override;
 
 protected:
+	// 근접 시야
+	int nearRange;
 	// 패트롤 변수
 	bool bPatrol = false;
 	int patrolRange = 50;

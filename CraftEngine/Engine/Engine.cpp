@@ -197,8 +197,13 @@ namespace Craft
 		
 		//충돌 처리
 		//의존성 주입 -> 액터리스트를 관리할 필요 없이 받아서 사용하는 것.
-		collisionSystem->ProcessCollision(mainLevel->collisionEnabledActorList);
-
+		collisionSystem->ProcessCollision(
+			mainLevel->playerActor,
+			mainLevel->collisionEnabledActorList);
+		collisionSystem->ProcessCollisionPlayer(
+			mainLevel->playerActor,
+			mainLevel->collisionEnabledActorList);
+		 
 	}
 	void Engine::SavePreviousInputStates()
 	{

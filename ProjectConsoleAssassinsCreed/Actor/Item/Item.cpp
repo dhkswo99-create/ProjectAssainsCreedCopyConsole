@@ -7,7 +7,7 @@ Item::Item(
 	const std::wstring& image,
 	const Vector2& position,
 	Color color)
-	: super(L"i", position, Color::White)
+	: super(L"i", position, Color::BrightYellow)
 {
 	dropKey = L"F";
 	SetColiisionEnabled(true);

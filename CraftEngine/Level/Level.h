@@ -100,6 +100,9 @@ namespace Craft
 		//Tick 사용 액터
 		std::vector<std::shared_ptr<Actor>> useTickActorList; 
 
+		//플레이어액터
+		std::shared_ptr<Actor> playerActor;
+
 		//레벨에 추가 요청된 액터를 저장해두는 목록.
 		//현재 프레임을 처리하는 과정에서 액터 추가 요청이 발생하면
 		//해당 액터를 바로 추가하면 기존 액터 처리에 문제가 발생가능

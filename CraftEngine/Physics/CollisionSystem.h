@@ -23,7 +23,12 @@ namespace Craft
 		~CollisionSystem() = default;
 
 		// 액터를 순회하면서 충돌을 확인하는 함수.
-		void ProcessCollision(const std::vector<std::shared_ptr<Actor>>& collisionEnabledActorList);
+		void ProcessCollision(
+			const std::shared_ptr<Actor>& player, 
+			const std::vector<std::shared_ptr<Actor>>& collisionEnabledActorList);
+		void ProcessCollisionPlayer(
+			const std::shared_ptr<Actor>& player,
+			const std::vector<std::shared_ptr<Actor>>& collisionEnabledActorList);
 
 	private:
 
@@ -32,5 +37,10 @@ namespace Craft
 			const std::shared_ptr<Actor>& left,
 			const std::shared_ptr<Actor>& right
 		);
+		bool TestLarge(
+			const std::shared_ptr<Actor>& left,
+			const std::shared_ptr<Actor>& right
+		);
+
 	};
 }

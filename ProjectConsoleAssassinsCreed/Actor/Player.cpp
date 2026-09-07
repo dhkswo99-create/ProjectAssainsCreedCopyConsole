@@ -3,14 +3,19 @@
 #include <Level/GameLevel.h>
 #include <Actor/Sword.h>
 #include <Actor/Item/Item.h>
+#include <Actor/Enemy/Enemy.h>
 #include <Render/Renderer.h>
 #include <Game/Game.h>
+#include <Util/Bresenham.h>
+
+#include <cmath>
 
 using namespace Craft;
 
 Player::Player(const Vector2& position)
 	: super(L"→", position, Color::Green)
 {
+	bPlayer = true;
 	// 다른 객체들보다 높은 우선 순위를 둘 것.
 	// Enemy 객체와 벽 객체와는 Collision 시 overlap 불가
 	hp = 100;
@@ -902,13 +907,52 @@ void Player::BeAttacked(const Vector2& face, int damage)
 
 void Player::OnCollision(const std::shared_ptr<Actor>& other)
 {
-	if (Input::Get().GetKey('f')
-		|| Input::Get().GetKey('F'))
-	//if(true)
+	if (other->IsTypeOf<Clue>()
+		|| other->IsTypeOf<Enemy>())
 	{
-		if (other->IsTypeOf<Clue>())
+		std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+		std::vector<std::vector<int>> map = level->GetMap();
+		Bresenham bresenham(map);
+		Vector2 otherPos = other->GetPosition();
+		std::vector<Vector2> path = bresenham.BresenhamFinder(
+			std::sqrt(
+				(position.x - otherPos.x)
+				* (position.x - otherPos.x)
+				+ (position.x - otherPos.y)
+				* (position.x - otherPos.y)
+			),
+			GetPosition(),
+			otherPos
+		);
+		for (Vector2 route : path)
 		{
-			other->Destroy();
+			if (!level->CanMove(route))
+			{
+				return;
+			}
 		}
+		other->OnCollision(shared_from_this());
+
+		if (Input::Get().GetKey('f')
+			|| Input::Get().GetKey('F'))
+		{
+			if (other->IsTypeOf<Clue>())
+			{
+				other->Destroy();
+			}
+			if (other->IsTypeOf<Enemy>())
+			{
+				//암살 
+				DoAttack(other, 150);
+			}
+		}
+	}
+}
+
+void Player::DoAttack(const std::shared_ptr<Actor>& other, int damage)
+{
+	if (other->IsTypeOf<Enemy>())
+	{
+		other->beAssassinated(damage);
 	}
 }

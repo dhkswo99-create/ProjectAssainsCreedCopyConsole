@@ -33,6 +33,9 @@ namespace Craft
 		virtual void OnCollision(const std::shared_ptr<Actor>& other);
 
 		// 공격함수
+		virtual void beAssassinated(const int damage)
+		{
+		}
 		virtual void DoAttack(const std::shared_ptr<Actor>& other, int damage)
 		{
 		}
@@ -62,6 +65,7 @@ namespace Craft
 		inline Vector2 GetPosition() const { return position; }
 		inline Vector2 GetFace() const { return face; }
 		
+		bool GetbPlayer() const { return bPlayer; }
 		inline bool GetIsSighted() const { return isSighted; }
 		inline void SetIsSighted(bool newIsSighted) { this->isSighted =  newIsSighted; }
 		inline bool GetKeepSighted() const { return keepSighted; }
@@ -114,7 +118,8 @@ namespace Craft
 		//체력
 		int hp;
 
-
+		//플레이어 확인 변수
+		bool bPlayer = false;
 
 		//시야
 		bool keepSighted;

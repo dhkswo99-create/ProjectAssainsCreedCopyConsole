@@ -18,7 +18,7 @@ public:
 	void MiniMapSubmit();
 
 
-
+	virtual void beAssassinated(const int damage) override;
 	virtual void DestroyWeapon() override;
 	virtual void BeAttacked(const Vector2& face, int damage) override;
 	void Tick(float deltaTime) override;
@@ -26,6 +26,9 @@ public:
 	
 
 private:
+	// 그로기
+	void Groggy(const int gage);
+
 	// 회전 행렬 계산
 	Craft::Vector2 CalMatrix(const Craft::Vector2& face,
 		int matrix0, int matrix1, int matrix2, int matrix3);
@@ -60,6 +63,8 @@ private:
 	Timer invincibilityTimer;
 	// 패턴 딜레이
 	Timer patternDelay;
+	// 그로기 턴
+	Timer groggyDelay;
 
 	// 보스 전 돌입 시간
 	Timer bossTimer;

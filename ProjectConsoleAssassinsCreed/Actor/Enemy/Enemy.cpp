@@ -33,6 +33,15 @@ void Enemy::Tick(float deltaTime)
 	
 	found = Searching(); // << 얘가 병목 성능이 100 프레임에서 50프로임 아래로 떨어트림
 
+	if (found)
+	{
+		nearRange = 6;
+	}
+	else
+	{
+		nearRange = 2;
+	}
+
 	if (level->GetDebuger())
 	{
 		Vector2 currentPos = GetPosition();
@@ -218,10 +227,6 @@ bool Enemy::Searching()
 		* (playerPos.x - myPos.x)
 		+ (playerPos.y - myPos.y)
 		* (playerPos.y - myPos.y));
-	if (distance < 100)
-	{
-		int a;
-	}
 	if (distance < patrolRange * patrolRange) 
 	{
 		bPatrol = true;
@@ -281,7 +286,7 @@ bool Enemy::Searching()
 	if (!isWall)
 	{
 		// 아주 가깝다면 깨어남
-		if (2 > distance)
+		if (nearRange > distance)
 		{
 			return true;
 		}
@@ -365,6 +370,36 @@ Vector2 Enemy::FacingDirection(const Vector2& currentPosition)
 		}
 	}
 	return Vector2(0, 0);
+}
+
+void Enemy::beAssassinated(const int damage)
+{
+	// 발견 X 일때만.
+	if (found)
+	{
+		return;
+	}
+	// 체력 감소
+	this->hp -= damage;
+
+	found = true;
+
+	// 체력 0 이하
+	if (this->hp <= 0)
+	{
+		// 타겟 소멸
+		Destroy();
+	}
+}
+void Enemy::OnCollision(const std::shared_ptr<Actor>& other)
+{
+	Renderer::Get().ScreenSubmit(
+		L"F : assassinate",
+		Vector2(18, 22),
+		Color::White,
+		3,
+		true
+	);
 }
 
 //std::vector<Vector2> Enemy::RayDirectionQueueInsert(const Vector2& currentPosition)

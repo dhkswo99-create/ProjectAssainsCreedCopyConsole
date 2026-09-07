@@ -6,29 +6,22 @@
 
 using namespace Craft;
 Client::Client(const Vector2& position)
-	: super(L"T", position, Color::White)
+	: super(L"C", position, Color::BrightPurple)
 {
 	hp = 500;
-	sortingOrder = 3;
+	sortingOrder = 16;
 	sightDegree = 40;
 	sightRange = 15;
 	range = 10;
 	moveSpeed = 20.f;
-	patternDelay.SetTargetTime(0.5f);
+	patternDelay.SetTargetTime(1.f);
 	invincibilityTimer.SetTargetTime(0.2f);
+	SetFace(Vector2(0, -1));
 	for (int ix = 0; ix < range; ++ix)
 	{
 		swordRoute.emplace_back();
 	}
-	// 회전 방향 미리 계산
-	negative90face = CalMatrix(face, negative90Degree[0], negative90Degree[1],
-		negative90Degree[2], negative90Degree[3]);
-	negative45face = CalMatrix(face, negative45Degree[0], negative45Degree[1],
-		negative45Degree[2], negative45Degree[3]);
-	positive45face = CalMatrix(face, positive45Degree[0], positive45Degree[1],
-		positive45Degree[2], positive45Degree[3]);
-	positive90face = CalMatrix(face, positive90Degree[0], positive90Degree[1],
-		positive90Degree[2], positive90Degree[3]);
+	groggyDelay.SetTargetTime(0);
 	// 충돌 가능 객체
 	SetColiisionEnabled(true);
 }
@@ -38,8 +31,22 @@ Client::~Client()
 	isDead = true;
 }
 
+void Client::beAssassinated(const int damage)
+{
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+	if (!beBoss)
+	{
+		beBoss = true;
+		sightRange = 50;
+		sightDegree = 180;
+		level->TargetBoss();
+	}
+	Groggy(30);
+	super::beAssassinated(damage);
+}
 void Client::BeAttacked(const Vector2& face, int damage)
 {
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	// 무적시간
 	if (!invincibilityTimer.IsTimeOut())
 	{
@@ -48,16 +55,19 @@ void Client::BeAttacked(const Vector2& face, int damage)
 	if (!beBoss)
 	{
 		beBoss = true;
+		sightRange = 50;
+		sightDegree = 180;
+		level->ClientBoss();
 	}
 
 	// 체력 감소
 	this->hp -= damage;
+	Groggy(10);
 	if (isGroggy)
 	{
 		this->hp -= damage;
 	}
 	// 넉백 
-	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	if (level->CanMove(GetPosition() + face))
 	{
 		SetPosition(GetPosition() + face);
@@ -116,6 +126,23 @@ void Client::DisplayHp()
 	if (beBoss)
 	{
 		Renderer::Get().ScreenSubmit(
+			L"          Groggy                          ",
+			Vector2(2, 22),
+			Color::BrightYellow,
+			10,
+			true
+		);
+		for (int ix = 20; ix < 20 + groggy / 10; ++ix)
+		{
+			Renderer::Get().ScreenSubmit(
+				L"■",
+				Vector2(ix, 22),
+				Color::BrightYellow,
+				11,
+				true
+			);
+		}
+		Renderer::Get().ScreenSubmit(
 			L"HP:",
 			Vector2(13, 41), // offset 0, 1 -> 세부 조정
 			Color::White,
@@ -139,8 +166,23 @@ void Client::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
-
+	MiniMapSubmit();
+	DisplayHp();
+	groggyDelay.Tick(deltaTime);
 	invincibilityTimer.Tick(deltaTime);
+	// 그로기 
+	if (!groggyDelay.IsTimeOut())
+	{
+		this->image = L"G";
+		isGroggy = true;
+		return;
+	}
+	if (this->image == L"G" && groggyDelay.IsTimeOut())
+	{
+		isGroggy = false;
+		groggy = 100;
+	}
+	// 발견 && 아직 보스전 시작 하지 않음
 	if (found && !beBoss)
 	{
 		bossTimer.Tick(deltaTime);
@@ -148,15 +190,16 @@ void Client::Tick(float deltaTime)
 		sightRange = 50;
 		sightDegree = 180;
 		// todo 보스 룸을 고립되게 만들 벽 객체 생성
+		level->ClientBoss();
 	}
+	// 찾았는데 공격 중이 아니라면
 	if (found && !doAttack)
 	{
 		SetFace(FacingDirection(GetPosition()));
 		pathDirection.clear();
 		pathDirection = FindRoute(level->GetPlayerPosition());
 	}
-	MiniMapSubmit();
-	DisplayHp();
+	// 보스전 개시
 	if (beBoss)
 	{
 		patternDelay.Tick(deltaTime);
@@ -190,19 +233,26 @@ void Client::Tick(float deltaTime)
 				{
 					nearFirstPattern = true;
 				}
-				// 40% 두번째
-				else if (randomNum > 1)
-				{
-					nearSecondPattern = true;
-				}
-				// 20% 밀어내기
-				else
-				{
-					supprsstionPattern = true;
-				}
+				//// 40% 두번째
+				//else if (randomNum > 1)
+				//{
+				//	nearSecondPattern = true;
+				//}
+				//// 20% 밀어내기
+				//else
+				//{
+				//	supprsstionPattern = true;
+				//}
 			}
 		}
 
+		if (patternDamage.size() == 0)
+		{
+			for (int ix = 0; ix < range; ++ix)
+			{
+				patternDamage.emplace_back(15);
+			}
+		}
 		//  멀면 추적해서 따라가서 전진 공격
 		if (farPattern && !doAttack)
 		{
@@ -220,7 +270,7 @@ void Client::Tick(float deltaTime)
 				doAttack = true;
 			}
 		}
-		// todo 가까울 때 연속 공격 로직 
+		// todo 가까울 때 공격 로직 
 		if (nearFirstPattern && !doAttack)
 		{
 			SetMoveSpeed(20.f);
@@ -244,7 +294,6 @@ void Client::Tick(float deltaTime)
 			patternDelay.Reset();
 			nearSecondPattern = false;
 			doAttack = true;
-
 		}
 		// todo 밀어내기 회전격
 		if (supprsstionPattern && !doAttack)
@@ -279,7 +328,7 @@ void Client::Attack(int range, std::vector<int>& damage)
 	Vector2 currentPos = GetPosition();
 	if (owner)
 	{
-		for (int ix = 0; ix < range; ++ix)
+		for (int ix = 0; swordRoute[ix].size(); ++ix)
 		{
 			swordSet.emplace_back(
 				owner->SpawnActor<Sword>(GetPosition(), swordRoute[ix], weak_from_this(), damage[ix])
@@ -288,6 +337,16 @@ void Client::Attack(int range, std::vector<int>& damage)
 		}
 	}
 	damage.clear();
+}
+
+void Client::Groggy(const int gage)
+{
+	groggy -= gage;
+	if (groggy <= 0)
+	{
+		groggyDelay.SetTargetTime(5.f);
+		groggyDelay.Reset();
+	}
 }
 
 Vector2 Client::CalMatrix(const Vector2& face, int matrix0, int matrix1, int matrix2, int matrix3)
@@ -304,11 +363,62 @@ void Client::CalcFarAttackPattern()
 {
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 
-	if (!InsertSwordRoute(level, swordRoute[0], Vector2::Zero)) return;
+	Vector2 negative90face = CalMatrix(face, negative90Degree[0], negative90Degree[1],
+		negative90Degree[2], negative90Degree[3]);
+	Vector2 negative45face = CalMatrix(face, negative45Degree[0], negative45Degree[1],
+		negative45Degree[2], negative45Degree[3]);
+	Vector2 positive45face = CalMatrix(face, positive45Degree[0], positive45Degree[1],
+		positive45Degree[2], positive45Degree[3]);
+	Vector2 positive90face = CalMatrix(face, positive90Degree[0], positive90Degree[1],
+		positive90Degree[2], positive90Degree[3]);
+
+	// First
+	for (int ix = 0; ix < 8; ++ix)
+	{
+		if (!InsertSwordRoute(level, swordRoute[0], face * 3)) return;
+	}
+	// Second
+	InsertSwordRoute(level, swordRoute[0], face * 3 + positive90face);
+	InsertSwordRoute(level, swordRoute[0], face * 3 + positive45face);
+	InsertSwordRoute(level, swordRoute[0], face * 3 - positive45face);
+	InsertSwordRoute(level, swordRoute[0], face * 3 + face);
+	InsertSwordRoute(level, swordRoute[0], face * 3 - face);
+	InsertSwordRoute(level, swordRoute[0], face * 3 + negative45face);
+	InsertSwordRoute(level, swordRoute[0], face * 3 - negative45face);
+	InsertSwordRoute(level, swordRoute[0], face * 3 + negative90face);
 }
 
 void Client::CalcNearFirstPattern()
 {
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+
+	Vector2 negative90face = CalMatrix(face, negative90Degree[0], negative90Degree[1],
+		negative90Degree[2], negative90Degree[3]);
+	Vector2 negative45face = CalMatrix(face, negative45Degree[0], negative45Degree[1],
+		negative45Degree[2], negative45Degree[3]);
+	Vector2 positive45face = CalMatrix(face, positive45Degree[0], positive45Degree[1],
+		positive45Degree[2], positive45Degree[3]);
+	Vector2 positive90face = CalMatrix(face, positive90Degree[0], positive90Degree[1],
+		positive90Degree[2], positive90Degree[3]);
+
+	if (face.x == 0 || face.y == 0)
+	{
+		for (int ix = 0; ix < 5; ++ix)
+		{
+			InsertSwordRoute(level, swordRoute[0], negative45face + face * ix);
+			InsertSwordRoute(level, swordRoute[1], face + face * ix);
+			InsertSwordRoute(level, swordRoute[2], positive45face + face * ix);
+		}
+	}
+	else
+	{
+		for (int ix = 0; ix < 5; ++ix)
+		{
+			InsertSwordRoute(level, swordRoute[0], negative45face + face * ix);
+			InsertSwordRoute(level, swordRoute[1], face + face * ix);
+			InsertSwordRoute(level, swordRoute[2], positive45face + face * ix);
+		}
+	}
 }
 
 void Client::CalcNearSecondPattern()
@@ -319,7 +429,8 @@ void Client::CalcSpinningSlash()
 {
 }
 
-bool Client::InsertSwordRoute(std::shared_ptr<GameLevel>& level, std::vector<Vector2>& swordRoute, Vector2& vector)
+bool Client::InsertSwordRoute(std::shared_ptr<GameLevel>& level,
+	std::vector<Vector2>& swordRoute, const Vector2& vector)
 {
 	if (!level->CanAttack(position, vector)) { return false; }
 	swordRoute.emplace_back(position + vector);

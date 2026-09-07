@@ -30,6 +30,7 @@ public:
 
 
 private:
+	virtual void Tick(float deltaTime) override;
 
 
 private:

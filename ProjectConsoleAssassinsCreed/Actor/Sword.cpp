@@ -8,7 +8,7 @@ using namespace Craft;
 using SwordFrame = Sword::SwordFrame;
 
 static const SwordFrame sword =
-		{L"◈", 0.025f, Color::Red }; // 총소요 0.175초 7틱.
+		{L"◈", 0.03f, Color::Red }; // 총소요 0.175초 7틱.
 
 Sword::Sword(const Vector2& position, const std::vector<Vector2>& path,
 				const std::weak_ptr<Actor>& handler, int damage)

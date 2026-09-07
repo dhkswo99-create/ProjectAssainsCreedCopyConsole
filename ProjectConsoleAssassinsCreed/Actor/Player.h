@@ -30,6 +30,7 @@ public:
 	float GetSightAngle() { return sightAngle; }
 	
 	virtual void OnCollision(const std::shared_ptr<Actor>& other) override;
+	virtual void DoAttack(const std::shared_ptr<Actor>& other, int damage) override;
 
 
 private:

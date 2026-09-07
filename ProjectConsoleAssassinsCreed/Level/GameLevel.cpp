@@ -87,9 +87,173 @@ bool GameLevel::CanAttack(const Craft::Vector2& playerPosition, const Craft::Vec
 	return false;
 }
 
+void GameLevel::MiniMap()
+{
+	int xOffset = GetMap().size() / 49; 
+	int yOffset = GetMap().size() / 20;
+	int mapSize = GetMap().size();
+	for (int ix = xOffset + 1; ix < mapSize - xOffset; ix += xOffset)
+	{
+		for (int jx = yOffset; jx < mapSize - yOffset; jx += yOffset)
+		{
+			Renderer::Get().ScreenSubmit( //  미니맵 처리
+				L" ",
+				Vector2(ix / xOffset
+					, jx / yOffset),
+				((GetDebuger()) ? true : sightMap[jx][ix].keepSight) ?
+				sightMap[jx][ix].data : Color::Black,
+				5,
+				true
+			);
+		}
+	}
+}
+
+void GameLevel::ToolTipDisplay() const
+{
+	if (!bTip)
+	{
+		return;
+	}
+	Renderer::Get().ScreenSubmit(
+		L"↑←↓→ : Move  WASD : Direction  Ctrl : Boost",
+		Vector2(2, 32),
+		Color::White,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L"F : Drop/Assasinate  SpaceBar(1/2/3) : Attack",
+		Vector2(2, 33),
+		Color::White,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L"ESC : Menu",
+		Vector2(2, 34),
+		Color::White,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L"MiniMapInfo",
+		Vector2(2, 35),
+		Color::White,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L"P(User) I(Item) T(Target) C(Client)",
+		Vector2(2, 36),
+		Color::White,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L"ActorList",
+		Vector2(2, 37),
+		Color::White,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L"A",
+		Vector2(13, 37),
+		Color::Cyan,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L" : Archer",
+		Vector2(14, 37),
+		Color::White,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L"G",
+		Vector2(24, 37),
+		Color::Yellow,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L" : Guard",
+		Vector2(25, 37),
+		Color::White,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L"P",
+		Vector2(35, 37),
+		Color::Green,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L" : Player",
+		Vector2(36, 37),
+		Color::White,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L"I",
+		Vector2(13, 38),
+		Color::BrightYellow,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L" : Item",
+		Vector2(14, 38),
+		Color::White,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L"T",
+		Vector2(24, 38),
+		Color::White,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L" : Target",
+		Vector2(25, 38),
+		Color::White,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L"C",
+		Vector2(35, 38),
+		Color::BrightPurple,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L" : Client",
+		Vector2(36, 38),
+		Color::White,
+		10,
+		true
+	);
+	Renderer::Get().ScreenSubmit(
+		L"If you get all item of actor, you can see.",
+		Vector2(2, 39),
+		Color::White,
+		10,
+		true
+	);
+
+}
+
 void GameLevel::SpawnActors()
 {
-	// 플레이어 생성 구문 (중복 생성XX)
+		// 플레이어 생성 구문 (중복 생성XX)ㄱ
 	player = SpawnActor<Player>(Vector2(68, 23));
 	// 카메라 생성 구문 (중복 생성XX)
 	camera = SpawnActor<Camera>();
@@ -762,6 +926,28 @@ void GameLevel::SubmitClue()
 	}
 }
 
+void GameLevel::TargetBoss()
+{
+	for (int ix = 265; ix < 268; ++ix)
+	{
+		sightMap[ix][51].data = Color::bGray;
+		sightMap[ix][51].image = '#';
+		map[ix][51] = 1;
+		SpawnActor<Wall>(Vector2(51, ix));
+	}
+}
+
+void GameLevel::ClientBoss()
+{
+	for (int ix = 266; ix < 269; ++ix)
+	{
+		sightMap[50][ix].data = Color::bGray;
+		sightMap[50][ix].image = '#';
+		map[50][ix] = 1;
+		SpawnActor<Wall>(Vector2(ix, 50));
+	}
+}
+
 void GameLevel::OnInitialized()
 {
 	//상위 개체 호출
@@ -779,6 +965,8 @@ void GameLevel::OnInitialized()
 
 void GameLevel::Draw()
 {
+	MiniMap();
+	ToolTipDisplay();
 	IsActorSighted();
 	IsTileSighted();
 	IsBossInfo();
@@ -876,6 +1064,16 @@ void GameLevel::Tick(float deltaTime)
 		debugerTrigger = 1 - debugerTrigger;
 		SetDebuger( (debugerTrigger == 1) ? true : false );
 	}
+	if (Input::Get().GetKeyDown(VK_F3))
+	{ 
+		cleanSightTrigger = 1 - cleanSightTrigger;
+		SetCleanViewer( (cleanSightTrigger == 1) ? true : false );
+	}
+	if (Input::Get().GetKeyDown(VK_F4))
+	{ 
+		TipTrigger = 1 - TipTrigger;
+		SetTip( (TipTrigger == 1) ? true : false );
+	}
 	// 디버그 모드 ON OFF 확인 
 	Renderer::Get().ScreenSubmit(L"Debug(F2)", Vector2(33, 47),
 		( (bDebuger) ? Color::White : Color::Gray),
@@ -886,13 +1084,11 @@ void GameLevel::Tick(float deltaTime)
 		( (bCleanSight) ? Color::White : Color::Gray),
 		21, true
 	);
-	
-	if (Input::Get().GetKeyDown(VK_F3))
-	{ 
-		cleanSightTrigger = 1 - cleanSightTrigger;
-		SetCleanViewer( (cleanSightTrigger == 1) ? true : false );
-	}
-
+	// 클린 사이트 
+	Renderer::Get().ScreenSubmit(L"Tip(F4)", Vector2(33, 45),
+		( (bTip) ? Color::Green : Color::Gray),
+		21, true
+	);
 
 	// ESC 종료
 	if (Input::Get().GetKeyDown(VK_ESCAPE))
