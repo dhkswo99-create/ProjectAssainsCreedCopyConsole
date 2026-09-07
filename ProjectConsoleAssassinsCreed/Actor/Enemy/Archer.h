@@ -35,6 +35,7 @@ private:
 	float castDelay;
 	float attackDelay;  // 랜덤으로 돌릴 것
 
+	bool bCharge = false;
 	bool doAttack = false;
 	bool doneAttack = true;
 

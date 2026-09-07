@@ -17,6 +17,24 @@ Game::Game()
 	changeLevelRender();
 	//게임 시작시 활성화할 레벨 설정
 	mainLevel = levelList[(int)state];
+
+	if (soundManager.Initialize())
+	{
+		soundManager.Load(L"Arrow.wav");
+		soundManager.Load(L"assasinate.wav");
+		soundManager.Load(L"beAttacked.wav");
+		soundManager.Load(L"Charging.wav");
+		soundManager.Load(L"die.wav");
+		soundManager.Load(L"Footstep.wav");
+		soundManager.Load(L"Hammer_1.wav");
+		soundManager.Load(L"Hammer_2.wav");
+		soundManager.Load(L"Item.wav");
+		soundManager.Load(L"Kick.wav");
+		soundManager.Load(L"sword_1.wav");
+		soundManager.Load(L"sword_2.wav");
+		soundManager.Load(L"sword_3.wav");
+		soundManager.Load(L"bgm.wav");
+	}
 }
 
 //void Game::ToggleMenu()

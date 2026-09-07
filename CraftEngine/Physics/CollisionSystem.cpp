@@ -46,12 +46,18 @@ namespace Craft
 
 			for (int jx = ix + 1; jx < count; ++jx)
 			{
+				
 				const std::shared_ptr<Actor>& right = collisionEnabledActorList[jx];
 				if (!right || !right->IsActive())
 				{
 					continue;
 				}
-				
+				if (left == right)
+				{
+					continue;
+				}
+
+
 				Vector2 rightPos = right->GetPosition();
 				// 범위 내 액터만 처리
 				if ((playerPos.x - rightPos.x)
@@ -120,6 +126,10 @@ namespace Craft
 		{
 			const std::shared_ptr<Actor>& right = collisionEnabledActorList[ix];
 			if (!right || !right->IsActive())
+			{
+				continue;
+			}
+			if (left == right)
 			{
 				continue;
 			}
@@ -203,14 +213,14 @@ namespace Craft
 
 		//충돌 발생
 		if (((leftCurrent.x - rightCurrent.x) * (leftCurrent.x - rightCurrent.x)
-				+ (leftCurrent.y - rightCurrent.y) * (leftCurrent.y - rightCurrent.y) <= 10)
+				+ (leftCurrent.y - rightCurrent.y) * (leftCurrent.y - rightCurrent.y) <= 17)
 			|| ((leftCurrent.x - rightPrevious.x) * (leftCurrent.x - rightPrevious.x)
-				+ (leftCurrent.y - rightPrevious.y) * (leftCurrent.y - rightPrevious.y) <= 10)
+				+ (leftCurrent.y - rightPrevious.y) * (leftCurrent.y - rightPrevious.y) <= 17)
 
 			|| ((leftPrevious.x - rightCurrent.x) * (leftPrevious.x - rightCurrent.x)
-				+ (leftPrevious.y - rightCurrent.y) * (leftPrevious.y - rightCurrent.y) <= 10)
+				+ (leftPrevious.y - rightCurrent.y) * (leftPrevious.y - rightCurrent.y) <= 17)
 			|| ((leftPrevious.x - rightPrevious.x) * (leftPrevious.x - rightPrevious.x)
-				+ (leftPrevious.y - rightPrevious.y) * (leftPrevious.y - rightPrevious.y) <= 10)
+				+ (leftPrevious.y - rightPrevious.y) * (leftPrevious.y - rightPrevious.y) <= 17)
 			)
 		{
 			return true;

@@ -79,6 +79,9 @@ private:
 
 	// 피격 시 무적 시간
 	Timer invincibilityTimer;
+
+	// 발소리 
+	Timer footstepTimer;
 	
 	// 사거리
 	int range = 3;

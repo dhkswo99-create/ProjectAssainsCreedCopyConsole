@@ -6,7 +6,7 @@
 using namespace Craft;
 
 Camera::Camera()
-	: super(L"C", (0, 0), Color::White)
+	: super(L"C", (0, 0), Color::Black)
 {
 	cameraView = Vector2::Zero;
 	sortingOrder = -1;

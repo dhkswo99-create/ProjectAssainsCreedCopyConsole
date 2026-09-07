@@ -3,13 +3,14 @@
 #include <Level/Level.h>
 #include <Actor/Player.h>
 #include <Actor/Item/Clue.h>
+#include <Audio/SoundManager.h>
 
 
 class Camera;
 //게임 클리어 등 게임 규칙 및 전반을 관리
 class GameLevel :public Craft::Level
 {
-public:
+public: 
 	struct sight
 	{
 		char image = ' ';
@@ -30,6 +31,7 @@ public:
 		const Craft::Vector2& playerPosition,
 		const Craft::Vector2& dPos
 	);
+
 	//보스
 	void IsBossInfo();
 	// 시야 관련
@@ -72,6 +74,9 @@ public:
 	// 보스룸 작업 함수
 	void TargetBoss();
 	void ClientBoss();
+
+	//사운드함수
+	void SoundPlay(const WCHAR* filename);
 
 private:
 	// 미니맵 디스플레이
@@ -154,6 +159,10 @@ private:
 	std::vector<std::vector<int>> clearMap;
 	std::shared_ptr<Camera> camera;
 	std::shared_ptr<Player> player;
+
+	// 사운드
+	SoundManager soundManager;
+	Timer bgmTimer;
 };
 
 

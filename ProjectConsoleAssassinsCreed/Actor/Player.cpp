@@ -9,6 +9,10 @@
 #include <Util/Bresenham.h>
 
 #include <cmath>
+#include <windows.h>
+#include <mmsystem.h>
+
+#pragma comment(lib, "winmm.lib")
 
 using namespace Craft;
 
@@ -66,6 +70,7 @@ void Player::Tick(float deltaTime)
 	delay.Tick(deltaTime);
 	buff.Tick(deltaTime);
 	invincibilityTimer.Tick(deltaTime);
+	footstepTimer.Tick(deltaTime);
 
 	if (invincibilityTimer.IsTimeOut())
 	{
@@ -161,6 +166,8 @@ void Player::Tick(float deltaTime)
 			}
 			// 검 루트 생성
 			CalcSwordRoute(GetFace(), GetPosition());
+			// 검 사운드 
+			level->SoundPlay(L"sword_1.wav");
 			// 루트를 따라 공격
   			Attack(face, deltaTime);
 			
@@ -189,12 +196,14 @@ void Player::Tick(float deltaTime)
 		delay.SetTargetTime(castDelay);
 		if (delay.IsTimeOut())
 		{
+			std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 			// 검 루트 생성
   			CalcSecondSwordRoute(GetFace(), GetPosition());
+			// 검 사운드 
+ 			level->SoundPlay(L"sword_2.wav");
 			// 루트를 따라 공격
 			Attack(face, deltaTime);
 			// 공격 중 이동
-			std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 			Vector2 positive90face = CalMatrix(face, positive90Degree[0], positive90Degree[1],
 				positive90Degree[2], positive90Degree[3]);
 			if (level->CanMove(GetPosition() + positive90face))
@@ -242,8 +251,11 @@ void Player::Tick(float deltaTime)
 		delay.SetTargetTime(castDelay);
 		if (delay.IsTimeOut())
 		{
+			std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 			// 검 루트 생성
   			CalcThirdSwordRoute(GetFace(), GetPosition());
+			// 검 사운드
+			level->SoundPlay(L"sword_1.wav");
 			// 루트를 따라 공격
 			Attack(face, deltaTime);
 			// 루트 초기화
@@ -837,6 +849,12 @@ void Player::Move(float directionX, float directionY, float deltaTime)
 	newPosition.y = static_cast<int>(yPosition);
 	if (level->CanMove(newPosition))
 	{
+		if (footstepTimer.IsTimeOut())
+		{
+			// 이동 사운드 
+			level->SoundPlay(L"Footstep.wav");
+			footstepTimer.Reset();
+		}
 		SetPosition(newPosition);
 	}
 	else
@@ -850,6 +868,7 @@ void Player::Attack(const Vector2& face, float deltaTime)
 {
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	std::shared_ptr<Level> owner = GetOwner();
+
 	if (owner)
 	{ //공격 범위만큼 생성 -> 확장은 벡터2 배열의 배열로 경로를 받고 
 		// - 검루트의 수만큼 for문 돌리면 됨.
@@ -897,11 +916,13 @@ void Player::BeAttacked(const Vector2& face, int damage)
 	// 체력 0 이하
 	if (this->hp <= 0)
 	{
-		// 플레이어가 휘두른 칼 삭제 -> 필요한가? 싶긴 함
+		level->SoundPlay(L"die.wav");
 		swordSet.clear();
 		// 플레이어 소멸
 		Destroy();
 	}
+
+	level->SoundPlay(L"beAttacked.wav");
 	invincibilityTimer.Reset();
 }
 

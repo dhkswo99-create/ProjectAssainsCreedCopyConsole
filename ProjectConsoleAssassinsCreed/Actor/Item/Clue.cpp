@@ -12,6 +12,7 @@ Clue::Clue(const Vector2& position)
 Clue::~Clue()
 {
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+	level->SoundPlay(L"Item.wav");
 	if (level)
 	{
 		if (bTarget)

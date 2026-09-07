@@ -948,10 +948,17 @@ void GameLevel::ClientBoss()
 	}
 }
 
+void GameLevel::SoundPlay(const WCHAR* filename) 
+{
+	auto& game = dynamic_cast<Game&>(Craft::Engine::Get());
+	game.GetSoundManager().Play(filename);
+}
+
 void GameLevel::OnInitialized()
 {
 	//상위 개체 호출
 	Level::OnInitialized();
+	bgmTimer.SetTargetTime(0.f);
 
 	//파일을 읽어서 맵 로드
 	LoadMap("ColorfulMap.txt"); 
@@ -1042,8 +1049,16 @@ void GameLevel::Draw()
 void GameLevel::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
+	bgmTimer.Tick(deltaTime);
 	SetGameStatus();
 	Game& game = dynamic_cast<Game&>(Engine::Get());
+
+	if (bgmTimer.IsTimeOut())
+	{
+		bgmTimer.Reset();
+		SoundPlay(L"bgm.wav");
+		bgmTimer.SetTargetTime(41.f);
+	}
 
 	Renderer::Get().ScreenSubmit(
 		L"Eliminate Target.",
@@ -1076,12 +1091,12 @@ void GameLevel::Tick(float deltaTime)
 	}
 	// 디버그 모드 ON OFF 확인 
 	Renderer::Get().ScreenSubmit(L"Debug(F2)", Vector2(33, 47),
-		( (bDebuger) ? Color::White : Color::Gray),
+		( (bDebuger) ? Color::Green : Color::Gray),
 		21, true
 	);
 	// 클린 사이트 
 	Renderer::Get().ScreenSubmit(L"CleanSight(F3)", Vector2(33, 46),
-		( (bCleanSight) ? Color::White : Color::Gray),
+		( (bCleanSight) ? Color::Green : Color::Gray),
 		21, true
 	);
 	// 클린 사이트 

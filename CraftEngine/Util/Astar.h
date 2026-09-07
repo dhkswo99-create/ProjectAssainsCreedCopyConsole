@@ -84,7 +84,7 @@ private:
 		const std::vector<std::vector<int>>& map) const;
 
 	// Open목록 및 Closed 목록 검사 함수.
-	Node* FindOpenNode(int x, int y) const;
+	Node* FindOpenNode(int x, int y, int& index) const;
 	bool IsInClosedList(int x, int y) const;
 
 	// 목적지 인지 확인하는 함수.

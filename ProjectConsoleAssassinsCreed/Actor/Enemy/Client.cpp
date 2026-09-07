@@ -3,7 +3,6 @@
 #include <Render/Renderer.h>
 #include <random>
 
-
 using namespace Craft;
 Client::Client(const Vector2& position)
 	: super(L"C", position, Color::BrightPurple)
@@ -264,6 +263,7 @@ void Client::Tick(float deltaTime)
 
 			if (distance <= 4)
 			{
+				level->SoundPlay(L"Hammer_1.wav");
 				CalcFarAttackPattern();
 				patternDelay.Reset();
 				farPattern = false;
@@ -280,6 +280,7 @@ void Client::Tick(float deltaTime)
 			}
 			if (distance <= 2)
 			{
+				level->SoundPlay(L"Hammer_2.wav");
 				CalcNearFirstPattern();
 				patternDelay.Reset();
 				nearFirstPattern = false;
@@ -375,17 +376,17 @@ void Client::CalcFarAttackPattern()
 	// First
 	for (int ix = 0; ix < 8; ++ix)
 	{
-		if (!InsertSwordRoute(level, swordRoute[0], face * 3)) return;
+		if (!InsertSwordRoute(level, swordRoute[ix], face * 3)) return;
 	}
 	// Second
 	InsertSwordRoute(level, swordRoute[0], face * 3 + positive90face);
-	InsertSwordRoute(level, swordRoute[0], face * 3 + positive45face);
-	InsertSwordRoute(level, swordRoute[0], face * 3 - positive45face);
-	InsertSwordRoute(level, swordRoute[0], face * 3 + face);
-	InsertSwordRoute(level, swordRoute[0], face * 3 - face);
-	InsertSwordRoute(level, swordRoute[0], face * 3 + negative45face);
-	InsertSwordRoute(level, swordRoute[0], face * 3 - negative45face);
-	InsertSwordRoute(level, swordRoute[0], face * 3 + negative90face);
+	InsertSwordRoute(level, swordRoute[1], face * 3 + positive45face);
+	InsertSwordRoute(level, swordRoute[2], face * 3 - positive45face);
+	InsertSwordRoute(level, swordRoute[3], face * 3 + face);
+	InsertSwordRoute(level, swordRoute[4], face * 3 - face);
+	InsertSwordRoute(level, swordRoute[5], face * 3 + negative45face);
+	InsertSwordRoute(level, swordRoute[6], face * 3 - negative45face);
+	InsertSwordRoute(level, swordRoute[7], face * 3 + negative90face);
 }
 
 void Client::CalcNearFirstPattern()

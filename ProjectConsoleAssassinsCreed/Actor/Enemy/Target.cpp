@@ -280,6 +280,8 @@ void Target::Tick(float deltaTime)
 
 			if (distance <= 4)
 			{
+				// 검 사운드 
+				level->SoundPlay(L"sword_3.wav");
 				CalcFarAttackPattern();
 				patternDelay.Reset();
 				farPattern = false;
@@ -302,6 +304,8 @@ void Target::Tick(float deltaTime)
 					{
 						if (!InsertSwordRoute(level, swordRoute[ix], face * (ix % 3))) return;
 					}
+					// 발차기 사운드 
+					level->SoundPlay(L"Kick.wav");
 					patternDelay.Reset();
 					doAttack = true;
 					bDoSecondAttack = true;
@@ -309,6 +313,8 @@ void Target::Tick(float deltaTime)
 				}
 				else
 				{
+					// 검 사운드 
+					level->SoundPlay(L"sword_3.wav");
 					CalcNearFirstPattern();
 					patternDelay.Reset();
 					nearFirstPattern = false;

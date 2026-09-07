@@ -78,13 +78,21 @@ void Archer::Tick(float deltaTime)
 	}
 	if (doAttack)
 	{
+		std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+		if (!bCharge)
+		{
+			level->SoundPlay(L"Charging.wav");
+			bCharge = true;
+		}
 		delay.SetTargetTime(castDelay);
 		if (delay.IsTimeOut())
 		{
+			level->SoundPlay(L"Arrow.wav");
 			Attack(range, face, deltaTime);
 			doneAttack = false;
 			doAttack = false;
-		delay.Reset();
+			bCharge = false;
+			delay.Reset();
 		}
 	}
 

@@ -143,7 +143,8 @@ bool AStar::FindPath(
             float newGCost = currentNode->gCost + direction.cost;
 
             // 이미 openList에 있는데 비용면에서 더 나은지 확인.
-            Node* openNode = FindOpenNode(newX, newY);
+            int changeIndex = 0;
+            Node* openNode = FindOpenNode(newX, newY, changeIndex);
             if (openNode)
             {
                 // 비용 비교.
@@ -152,6 +153,25 @@ bool AStar::FindPath(
                     openNode->gCost = newGCost;
                     openNode->fCost = openNode->gCost + openNode->hCost;
                     openNode->parent = currentNode;
+                    int selected = changeIndex;
+                    int upper = (selected - 1) / 2;
+                    while (true)
+                    {
+                        if (openList[selected]->fCost < openList[upper]->fCost)
+                        {
+                            SwapNode(selected, upper, openList);
+                            selected = upper;
+                            upper = (selected - 1) / 2;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                        if (selected == 0)
+                        {
+                            break;
+                        }
+                    }
                 }
 
                 continue;
@@ -167,7 +187,7 @@ bool AStar::FindPath(
             neighborNode->fCost = neighborNode->gCost + neighborNode->hCost;
 
             // 새로운 노드를 openList에 추가.
-            openList.emplace_back(neighborNode);
+            InsertHeap(openList, neighborNode);
 
             // 옵션: 시각화를 위한 처리.
             if (map[newY][newX] == (int)TileType::Ground)
@@ -363,8 +383,9 @@ bool AStar::IsDiagonalBlocked(
         || map[sideY][current.x] == (int)TileType::Wall;
 }
 //순차 -> 오픈 노드 리스트에 동일한 거 있나 확인
-Node* AStar::FindOpenNode(int x, int y) const
-{
+Node* AStar::FindOpenNode(int x, int y, int& index) const
+{   
+    index = 0;
     // 같은 좌표의 노드를 OpenList에서 찾기.
     for (Node* node : openList)
     {
@@ -373,6 +394,7 @@ Node* AStar::FindOpenNode(int x, int y) const
         {
             return node;
         }
+        ++index;
     }
 
     return nullptr;

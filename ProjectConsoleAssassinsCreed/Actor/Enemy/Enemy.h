@@ -61,7 +61,7 @@ public:
 
 protected:
 	// 근접 시야
-	int nearRange;
+	int nearRange = 1;
 	// 패트롤 변수
 	bool bPatrol = false;
 	int patrolRange = 50;

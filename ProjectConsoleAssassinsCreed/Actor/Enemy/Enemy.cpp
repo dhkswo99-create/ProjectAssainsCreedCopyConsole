@@ -384,6 +384,8 @@ void Enemy::beAssassinated(const int damage)
 
 	found = true;
 
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+	level->SoundPlay(L"assasinate.wav");
 	// 체력 0 이하
 	if (this->hp <= 0)
 	{

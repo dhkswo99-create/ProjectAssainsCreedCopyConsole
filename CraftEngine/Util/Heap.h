@@ -19,7 +19,7 @@ public:
 
 void SwapNode(int leftIndex, int rightIndex, std::vector<Node*>& nodes);
 
-void InsertHeap(std::vector<Node*>& nodes, Node& newNode);
+void InsertHeap(std::vector<Node*>& nodes, Node* newNode);
 
 Node* popHeap(std::vector<Node*>& nodes);
 
