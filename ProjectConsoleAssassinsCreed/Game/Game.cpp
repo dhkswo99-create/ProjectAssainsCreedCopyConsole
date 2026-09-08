@@ -34,6 +34,8 @@ Game::Game()
 		soundManager.Load(L"sword_2.wav");
 		soundManager.Load(L"sword_3.wav");
 		soundManager.Load(L"bgm.wav");
+		soundManager.Load(L"guardsword.wav");
+		soundManager.Load(L"blood.wav");
 	}
 }
 

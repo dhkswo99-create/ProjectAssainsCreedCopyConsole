@@ -56,6 +56,7 @@ public:
 	Craft::Vector2 GetPlayerPosition() const { return player->GetPosition(); }
 	Craft::Vector2 GetPlayerFace() const { return player->GetFace(); }
 	std::vector<std::vector<int>> GetMap() { return map; }
+	std::vector<std::vector<int>>& GetMapReference() { return map; }
 	std::vector<std::vector<int>> GetClearMap() { return clearMap; }
 
 	//아이템 충돌 이벤트 Press F 출력
@@ -154,7 +155,6 @@ private:
 
 
 	std::vector<std::vector<sight>> sightMap;
-	// 공간을 좀 쓰긴 하는데 계속 쓸 예정
 	std::vector<std::vector<int>> map;
 	std::vector<std::vector<int>> clearMap;
 	std::shared_ptr<Camera> camera;

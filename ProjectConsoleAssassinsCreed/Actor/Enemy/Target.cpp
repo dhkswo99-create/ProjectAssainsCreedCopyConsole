@@ -42,7 +42,10 @@ void Target::beAssassinated(const int damage)
 		sightDegree = 180;
 		level->TargetBoss();
 	}
-	Groggy(30);
+	if (!found)
+	{
+		Groggy(30);
+	}
 	super::beAssassinated(damage);
 }
 
@@ -80,6 +83,7 @@ void Target::BeAttacked(const Vector2& face, int damage)
 	// 넉백 
 	if (level->CanMove(GetPosition() + face))
 	{
+		KnockBack(face);
 		SetPosition(GetPosition() + face);
 	}
 

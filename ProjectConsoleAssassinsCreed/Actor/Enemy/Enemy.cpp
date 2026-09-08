@@ -22,12 +22,14 @@ Enemy::Enemy(
 	:super(image, position, color)
 {
 	isSighted = true;
+	patrolTimer.SetTargetTime(2.f);
 }
 
 void Enemy::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
+	patrolTimer.Tick(deltaTime);
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	map = level->GetMap();
 	
@@ -196,6 +198,8 @@ void Enemy::Move(const Vector2& direction, float deltaTime)
 		if (level->CanMove(newPosition))
 		{
 			SetPosition(newPosition);
+			level->GetMapReference()[currentPosition.y][currentPosition.x] = 0;
+			level->GetMapReference()[newPosition.y][newPosition.x] = 10;
 			dx = 0;
 			dy = 0;
 			--moveIndex;
@@ -211,6 +215,21 @@ void Enemy::Move(const Vector2& direction, float deltaTime)
 void Enemy::Awake()
 {
 	sleep = true;
+}
+
+void Enemy::Destroy()
+{
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+	level->GetMapReference()[position.y][position.x] = 0;
+
+	super::Destroy();
+}
+
+void Enemy::KnockBack(const Vector2& face)
+{
+	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
+	level->GetMapReference()[position.y][position.x] = 0;
+	level->GetMapReference()[position.y + face.y][position.x + face.x] = 10;
 }
 
 // 이 함수에서 Calling, Call이 호출
@@ -389,12 +408,17 @@ void Enemy::beAssassinated(const int damage)
 	// 체력 0 이하
 	if (this->hp <= 0)
 	{
+		level->SoundPlay(L"blood.wav");
 		// 타겟 소멸
 		Destroy();
 	}
 }
 void Enemy::OnCollision(const std::shared_ptr<Actor>& other)
 {
+	if (found)
+	{
+		return;
+	}
 	Renderer::Get().ScreenSubmit(
 		L"F : assassinate",
 		Vector2(18, 22),

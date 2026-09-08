@@ -39,6 +39,10 @@ bool GameLevel::CanMove(const Craft::Vector2& nextPosition)
 	
 	// 이동하려는 곳에 벽이 있을 경우 
 	// 이동하려는 곳에 이동 객체가 있는가
+	if (map[nextPosition.y][nextPosition.x])
+	{
+		return false;
+	}
 	for (const std::shared_ptr<Actor>& actor : collisionEnabledActorList)
 	{
 		if (actor->GetPosition() == nextPosition)
@@ -54,15 +58,7 @@ bool GameLevel::CanMove(const Craft::Vector2& nextPosition)
 			return true; // 박스는 이미 처리됨
 		}
 	}
-	if (map[nextPosition.y][nextPosition.x])
-	{
-		return false;
-	}
-	else
-	{
-		return true;
-	}
-	return false; // 예상치 못한 처리 - 이동 불가
+	return true; // 벽X 객체X 통과
 }
 
 bool GameLevel::CanAttack(const Craft::Vector2& playerPosition, const Craft::Vector2& dPos)
@@ -76,7 +72,7 @@ bool GameLevel::CanAttack(const Craft::Vector2& playerPosition, const Craft::Vec
 	}
 
 	//공격하려는 곳이 벽인 경우
-	if (map[playerPosition.y + dPos.y][playerPosition.x + dPos.x])
+	if (map[playerPosition.y + dPos.y][playerPosition.x + dPos.x] == 1)
 	{
 		return false;
 	}
@@ -279,34 +275,34 @@ void GameLevel::SpawnActors()
 
 
 	// 객체 자동 생성
-	srand(time(nullptr));
-	int startX = 12;
-	int startY = 12;
-	int endX = 288;
-	int endY = 288;
-	int actorCount = 0;
-	while (actorCount <= 100)
-	{
-		int ranX = rand() % 276 + 12;
-		int ranY = rand() % 276 + 12;
+	//srand(time(nullptr));
+	//int startX = 12;
+	//int startY = 12;
+	//int endX = 288;
+	//int endY = 288;
+	//int actorCount = 0;
+	//while (actorCount <= 100)
+	//{
+	//	int ranX = rand() % 276 + 12;
+	//	int ranY = rand() % 276 + 12;
 
-		if (map[ranY][ranX] == 1
-			|| ( ranX < 75 && ranY < 70 ))
-		{
-			continue;
-		}
+	//	if (map[ranY][ranX] == 1
+	//		|| ( ranX < 75 && ranY < 70 ))
+	//	{
+	//		continue;
+	//	}
 
-		if ((ranX + ranY) % 2 == 0)
-		{
-			SpawnActor<Guard>(Vector2(ranX, ranY));
-			++actorCount;
-		}
-		else
-		{
-			SpawnActor<Archer>(Vector2(ranX, ranY));
-			++actorCount;
-		}
-	}
+	//	if ((ranX + ranY) % 2 == 0)
+	//	{
+	//		SpawnActor<Guard>(Vector2(ranX, ranY));
+	//		++actorCount;
+	//	}
+	//	else
+	//	{
+	//		SpawnActor<Archer>(Vector2(ranX, ranY));
+	//		++actorCount;
+	//	}
+	//}
 }
 
 void GameLevel::SpawnClue(const std::string kindOfClue, const Vector2& position)
@@ -473,8 +469,8 @@ void GameLevel::CalcSight()
 			{
 				break;
 			}
-			// 첫 벽을 만난다면
-			if (map[route.y][route.x] == 1)
+			// 첫 벽이나 객체
+			if (map[route.y][route.x] == 1 || map[route.y][route.x] == 10)
 			{
 				isWall = true;
 			}
@@ -486,9 +482,9 @@ void GameLevel::CalcSight()
 
 void GameLevel::IsTileSighted()
 {
-	int minX = (player->GetPosition().x - 50 > 0) ? player->GetPosition().x - 50 : 0;
-	int maxX = (player->GetPosition().x + 50 < sightMap[0].size()) ? player->GetPosition().x + 50 : sightMap[0].size() - 1;
-	int minY = (player->GetPosition().y - 50 > 0) ? player->GetPosition().y - 50 : 0;
+	int minX = (player->GetPosition().x - 52 > 0) ? player->GetPosition().x - 52 : 0;
+	int maxX = (player->GetPosition().x + 52 < sightMap[0].size()) ? player->GetPosition().x + 52 : sightMap[0].size() - 1;
+	int minY = (player->GetPosition().y - 40 > 0) ? player->GetPosition().y - 40 : 0;
 	int maxY = (player->GetPosition().y + 50 < sightMap.size()) ? player->GetPosition().y + 50 : sightMap.size() - 1;
 
 	for (int ix = minX; ix < maxX;++ix)
@@ -1308,13 +1304,13 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 					{
 						continue;
 					}
-					Renderer::Get().Submit(
-						L"∬",
-						Vector2(sightPosX, sightPosY),
-						Color::Green,
-						3,
-						true
-					);
+					//Renderer::Get().Submit(
+					//	L"∬",
+					//	Vector2(sightPosX, sightPosY),
+					//	Color::Green,
+					//	3,
+					//	true
+					//);
 				}
 			}
 		}
@@ -1330,7 +1326,7 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 	{
 		return true;
 	}
-	else if (distance > player->GetSightRange() * player->GetSightRange())
+	else if (distance > player->GetSightRange() * player->GetSightRange() + 1)
 	{
 		return false;
 	}
@@ -1396,13 +1392,13 @@ bool GameLevel::SearchingActorGL(const std::shared_ptr <Actor>& actor)
 
 			if (bDebuger)
 			{
-				Renderer::Get().Submit(
-					L"∬",
-					path,
-					Color::Green,
-					1,
-					true
-				);
+				//Renderer::Get().Submit(
+				//	L"∬",
+				//	path,
+				//	Color::Green,
+				//	1,
+				//	true
+				//);
 			}
 		}
 		if (!isWall)

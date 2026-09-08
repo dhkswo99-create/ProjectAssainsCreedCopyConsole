@@ -26,7 +26,7 @@ Player::Player(const Vector2& position)
 	isSighted = true;
 	face = Vector2::Right;
 	moveSpeed = 10.0f;
-	sortingOrder = 14;
+	sortingOrder = 25;
 	xPosition = static_cast<float>(position.x);
 	yPosition = static_cast<float>(position.y);
 	delay.SetTargetTime(0);
@@ -945,6 +945,10 @@ void Player::OnCollision(const std::shared_ptr<Actor>& other)
 			GetPosition(),
 			otherPos
 		);
+		if (path.size())
+		{
+			path.pop_back();
+		}
 		for (Vector2 route : path)
 		{
 			if (!level->CanMove(route))
@@ -954,8 +958,8 @@ void Player::OnCollision(const std::shared_ptr<Actor>& other)
 		}
 		other->OnCollision(shared_from_this());
 
-		if (Input::Get().GetKey('f')
-			|| Input::Get().GetKey('F'))
+		if (Input::Get().GetKeyDown('f')
+			|| Input::Get().GetKeyDown('F'))
 		{
 			if (other->IsTypeOf<Clue>())
 			{
@@ -972,8 +976,5 @@ void Player::OnCollision(const std::shared_ptr<Actor>& other)
 
 void Player::DoAttack(const std::shared_ptr<Actor>& other, int damage)
 {
-	if (other->IsTypeOf<Enemy>())
-	{
-		other->beAssassinated(damage);
-	}
+	other->beAssassinated(damage);	
 }

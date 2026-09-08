@@ -54,7 +54,7 @@ void Guard::Tick(float deltaTime)
 	else
 	{
 		sightRange = 15.f;
-		sightDegree = 45;
+		sightDegree = 37;
 	}
 
 	if (!sleep && found
@@ -76,6 +76,7 @@ void Guard::Tick(float deltaTime)
 		delay.SetTargetTime(castDelay);
 		if (delay.IsTimeOut())
 		{
+			level->SoundPlay(L"guardsword.wav");
 			Attack(range, face, deltaTime);
 			doneAttack = false;
 			doAttack = false;
@@ -137,6 +138,7 @@ void Guard::BeAttacked(const Vector2& face, int damage)
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	if (level->CanMove(GetPosition() + face))
 	{
+		KnockBack(face);
 		SetPosition(GetPosition() + face);
 	}
 

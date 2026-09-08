@@ -19,6 +19,10 @@ public:
 
 	void Awake();
 
+	virtual void Destroy() override;
+	
+	void KnockBack(const Vector2& face); 
+
 	void Move(const Vector2& destination, float deltaTime);
 
 	virtual void Tick(float deltaTime) override;
@@ -97,6 +101,9 @@ protected:
 	std::vector<Vector2> rayDirection;
 
 private:
+	//패트롤 타이머
+	Timer patrolTimer;
+
 	// 이동량 변수
 	float dx = 0;
 	float dy = 0;

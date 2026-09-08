@@ -269,6 +269,7 @@ namespace Craft
 					{
 						frame->charInfoArray[index].Attributes
 							= BACKGROUND_INTENSITY;
+
 						if (command.image == L"░")
 						{
 							frame->charInfoArray[index].Attributes
@@ -305,7 +306,7 @@ namespace Craft
 					frame->sortingOrderArray[index] = command.sortingOrder;
 				}
 			}
-			// Todo 렌더 아이템 렌더 영역에 맞게 수정
+			// 렌더 아이템 렌더 영역에 맞게 수정
 			for (const RenderCommand& command : itemRenderQueue)
 			{
 				//그릴 문자값이 없으면 건너뛰기 // 너비는 width 높이는 height로 설정 

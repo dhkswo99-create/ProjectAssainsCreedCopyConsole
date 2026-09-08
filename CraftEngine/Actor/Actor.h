@@ -47,7 +47,7 @@ namespace Craft
 		}
 
 		//액터 제거 함수
-		void Destroy();
+		virtual void Destroy();
 		// 게임 엔진 종료 함수
 		void QuitGame();
 

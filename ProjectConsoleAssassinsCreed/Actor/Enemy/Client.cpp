@@ -13,7 +13,7 @@ Client::Client(const Vector2& position)
 	sightRange = 15;
 	range = 10;
 	moveSpeed = 20.f;
-	patternDelay.SetTargetTime(1.f);
+	patternDelay.SetTargetTime(1.7f);
 	invincibilityTimer.SetTargetTime(0.2f);
 	SetFace(Vector2(0, -1));
 	for (int ix = 0; ix < range; ++ix)
@@ -40,7 +40,10 @@ void Client::beAssassinated(const int damage)
 		sightDegree = 180;
 		level->TargetBoss();
 	}
-	Groggy(30);
+	if (!found)
+	{
+		Groggy(30);
+	}
 	super::beAssassinated(damage);
 }
 void Client::BeAttacked(const Vector2& face, int damage)
@@ -69,6 +72,7 @@ void Client::BeAttacked(const Vector2& face, int damage)
 	// 넉백 
 	if (level->CanMove(GetPosition() + face))
 	{
+		KnockBack(face);
 		SetPosition(GetPosition() + face);
 	}
 
@@ -320,10 +324,6 @@ void Client::Tick(float deltaTime)
 
 void Client::Attack(int range, std::vector<int>& damage)
 {
-	if (range != damage.size())
-	{
-		return;
-	}
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	std::shared_ptr<Level> owner = GetOwner();
 	Vector2 currentPos = GetPosition();

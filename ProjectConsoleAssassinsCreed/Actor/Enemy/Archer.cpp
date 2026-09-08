@@ -154,6 +154,7 @@ void Archer::BeAttacked(const Vector2& face, int damage)
 	std::shared_ptr<GameLevel> level = Cast<GameLevel>(GetOwner());
 	if (level->CanMove(GetPosition() + face))
 	{
+		KnockBack(face);
 		SetPosition(GetPosition() + face);
 	}
 
